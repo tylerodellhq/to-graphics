@@ -1,0 +1,100 @@
+{
+  "id": "uk.co.tylerodell.tographics",
+  "name": "TO Graphics",
+  "version": "1.0.0",
+  "main": "index.html",
+  "host": {
+    "app": "premierepro",
+    "minVersion": "25.6.0"
+  },
+  "manifestVersion": 5,
+  "requiredPermissions": {
+    "network": {
+      "domains": [
+        "https://raw.githubusercontent.com"
+      ]
+    },
+    "localFileSystem": "fullAccess",
+    "launchProcess": {
+      "schemes": [
+        "https"
+      ],
+      "extensions": [
+        ".ccx",
+        ".mogrt"
+      ]
+    },
+    "clipboard": "readAndWrite"
+  },
+  "entrypoints": [
+    {
+      "id": "toGraphicsPanel",
+      "type": "panel",
+      "label": {
+        "default": "TO Graphics"
+      },
+      "minimumSize": {
+        "width": 260,
+        "height": 300
+      },
+      "maximumSize": {
+        "width": 2000,
+        "height": 2000
+      },
+      "preferredDockedSize": {
+        "width": 360,
+        "height": 700
+      },
+      "preferredFloatingSize": {
+        "width": 400,
+        "height": 760
+      },
+      "icons": [
+        {
+          "width": 23,
+          "height": 23,
+          "path": "icons/panel.png",
+          "scale": [
+            1,
+            2
+          ],
+          "theme": [
+            "all"
+          ]
+        }
+      ]
+    }
+  ],
+  "icons": [
+    {
+      "width": 24,
+      "height": 24,
+      "path": "icons/plugin.png",
+      "scale": [
+        1,
+        2
+      ],
+      "theme": [
+        "all"
+      ],
+      "species": [
+        "pluginList"
+      ]
+    },
+    {
+      "width": 48,
+      "height": 48,
+      "path": "icons/plugin_generic.png",
+      "scale": [
+        1,
+        2
+      ],
+      "theme": [
+        "all"
+      ],
+      "species": [
+        "generic"
+      ]
+    }
+  ]
+}

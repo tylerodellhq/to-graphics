@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    /* Tyler Odell Creative colours: Night, Bone, Wasabi (main action), Sky (one touch: updates). */
+    :root { --night: #121110; --panel: #1c1a18; --tile: #24221f; --line: rgba(239,233,220,0.12); --bone: #EFE9DC; --dim: rgba(239,233,220,0.55); --wasabi: #E9F056; --sky: #8FCAFF; --err: #FF7A6B; }
+    html, body { height: 100%; }
+    body { margin: 0; padding: 10px 12px; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
+      background: var(--night); color: var(--bone); font-size: 12px; font-family: var(--uxp-host-font-family, sans-serif); }
+    .muted { color: var(--dim); }
+    .hide { display: none; }
+
+    /* header */
+    .head { display: flex; align-items: center; flex: 0 0 auto; margin-bottom: 8px; }
+    .logo { display: flex; align-items: center; flex: 1 1 auto; min-width: 0; }
+    .logo .to { width: 22px; height: 22px; border-radius: 11px; background: var(--wasabi); color: var(--night); font-weight: 900; font-size: 10px; display: flex; align-items: center; justify-content: center; margin-right: 7px; flex: 0 0 auto; }
+    .logo .nm { font-weight: 800; font-size: 14px; letter-spacing: -0.2px; }
+    .iconbtn { flex: 0 0 auto; padding: 4px; margin-left: 4px; cursor: pointer; opacity: 0.65; }
+    .iconbtn:hover { opacity: 1; }
+    .iconbtn img { display: block; }
+    .pill { flex: 0 0 auto; display: flex; align-items: center; padding: 2px 10px 2px 8px; border-radius: 11px; background: #2c2a27; border: 1px solid #2c2a27; font-size: 11px; font-weight: bold; cursor: pointer; margin-left: 6px; }
+    .pill img { margin-right: 4px; }
+    .pill:hover { background: #3a3733; border-color: #3a3733; }
+
+    /* buttons */
+    .btn { flex: 0 0 auto; padding: 4px 12px; border-radius: 13px; font-weight: bold; font-size: 12px; cursor: pointer; text-align: center;
+      background: var(--wasabi); color: var(--night); border: 1px solid var(--wasabi); }
+    .btn:hover { background: #f2f78a; border-color: #f2f78a; }
+    .btn.ghost { background: transparent; color: var(--bone); border-color: rgba(239,233,220,0.3); }
+    .btn.ghost:hover { border-color: var(--bone); }
+    .btn.sky { background: var(--sky); border-color: var(--sky); }
+    .btn.small { padding: 2px 10px; font-size: 11px; border-radius: 10px; }
+    .btn.off { background: #2c2a27; border-color: #2c2a27; color: #77736b; cursor: default; }
+    .linkbtn { cursor: pointer; color: var(--dim); padding: 2px 4px; }
+    .linkbtn:hover { color: var(--bone); }
+
+    /* bars */
+    .bar { display: none; align-items: center; padding: 6px 8px; margin: 0 0 7px; border-radius: 8px; border: 1px solid var(--sky); flex: 0 0 auto; }
+    .bar.on { display: flex; }
+    .bar .txt { flex: 1 1 auto; min-width: 0; margin-right: 8px; line-height: 1.35; }
+    .bar .btn { margin-left: 5px; }
+    #notice.work { border-color: var(--line); }
+
+    /* search + chips */
+    .findRow { display: flex; align-items: center; flex: 0 0 auto; margin-bottom: 6px; }
+    #search { flex: 1 1 auto; min-width: 0; }
+    #favBtn { margin-left: 6px; }
+    .chips { display: flex; flex: 0 0 auto; overflow-x: auto; margin-bottom: 6px; padding-bottom: 2px; }
+    .chip { flex: 0 0 auto; padding: 2px 10px; margin-right: 5px; border-radius: 10px; cursor: pointer; white-space: nowrap; background: #2c2a27; border: 1px solid #2c2a27; font-weight: bold; }
+    .chip .n { font-weight: normal; color: var(--dim); margin-left: 4px; }
+    .chip.on { background: var(--bone); border-color: var(--bone); color: var(--night); }
+    .chip.on .n { color: rgba(18,17,16,0.55); }
+    .chip.add { background: transparent; border: 1px dashed rgba(239,233,220,0.35); color: var(--dim); font-weight: normal; }
+    .chips.sub .chip { background: transparent; border: 1px solid rgba(239,233,220,0.25); font-size: 11px; padding: 1px 9px; border-radius: 9px; font-weight: normal; }
+    .chips.sub .chip.on { border-color: var(--bone); color: var(--bone); background: transparent; font-weight: bold; }
+
+    /* grid */
+    #grid { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-wrap: wrap; align-content: flex-start; }
+    .group { width: 100%; font-size: 10px; font-weight: bold; letter-spacing: 1px; color: var(--dim); margin: 6px 0 6px 2px; }
+    .tile { position: relative; width: 31.3%; margin: 0 2% 8px 0; border-radius: 9px; padding: 5px 5px 6px; box-sizing: border-box;
+      background: var(--tile); border: 2px solid var(--tile); cursor: pointer; display: flex; flex-direction: column; }
+    .tile:hover { border-color: #3a3733; }
+    .tile.sel { border-color: var(--wasabi); }
+    .tile.hid { opacity: 0.45; }
+    .frame { height: 112px; border-radius: 5px; background: #0b0a09; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+    .frame img { display: block; }
+    .ph { border: 1px dashed rgba(239,233,220,0.25); border-radius: 3px; display: flex; align-items: center; justify-content: center; color: var(--dim); font-size: 9px; text-align: center; }
+    .tname { margin-top: 5px; font-size: 11px; font-weight: bold; line-height: 1.25; max-height: 28px; overflow: hidden; }
+    .tmeta { font-size: 10px; color: var(--dim); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .badge { position: absolute; top: 4px; left: 4px; padding: 0 5px; border-radius: 6px; font-size: 9px; font-weight: bold; line-height: 14px; background: rgba(18,17,16,0.8); color: var(--bone); }
+    .badge.new { background: var(--wasabi); color: var(--night); }
+    .badge.upd { background: var(--sky); color: var(--night); }
+    .star { position: absolute; top: 3px; right: 3px; padding: 2px; }
+    .empty { width: 100%; padding: 24px 8px; text-align: center; color: var(--dim); line-height: 1.5; }
+
+    /* detail */
+    #detail { flex: 0 0 auto; border-top: 1px solid var(--line); padding-top: 8px; margin-top: 2px; display: none; flex-direction: column; }
+    #detail.on { display: flex; }
+    .dTop { display: flex; align-items: flex-start; }
+    .dName { flex: 1 1 auto; min-width: 0; font-weight: bold; font-size: 13px; }
+    .dMeta { font-size: 11px; color: var(--dim); margin-top: 2px; }
+    .dRow { display: flex; align-items: center; margin-top: 7px; flex-wrap: wrap; }
+    .dRow .lbl { font-size: 10px; letter-spacing: 1px; font-weight: bold; color: var(--dim); width: 50px; flex: 0 0 auto; }
+    #dClient { flex: 1 1 auto; min-width: 0; }
+    #dTypes { display: flex; flex-wrap: wrap; flex: 1 1 0; min-width: 0; }
+    #dTypes .chip { font-size: 10px; padding: 0 8px; line-height: 17px; margin: 0 4px 4px 0; font-weight: normal; background: transparent; border: 1px solid rgba(239,233,220,0.22); color: var(--dim); }
+    #dTypes .chip.on { border-color: var(--bone); color: var(--bone); font-weight: bold; }
+    .dBtns { display: flex; align-items: center; margin-top: 8px; }
+    .dBtns .btn { margin-right: 6px; }
+    .dBtns .grow { flex: 1 1 auto; }
+
+    /* footer */
+    .foot { flex: 0 0 auto; padding-top: 6px; display: flex; align-items: center; font-size: 11px; min-height: 16px; }
+    #status { flex: 1 1 auto; min-width: 0; }
+    #status.err { color: var(--err); }
+    #status.ok { color: var(--sky); }
+
+    /* dialogs */
+    dialog { background: var(--night); color: var(--bone); font-size: 12px; }
+    .dlg { display: flex; flex-direction: column; padding: 4px 2px; }
+    .dlgTitle { font-size: 15px; font-weight: bold; margin-bottom: 6px; }
+    .dlgBody { margin-bottom: 10px; line-height: 1.45; color: rgba(239,233,220,0.75); }
+    .dlgBtns { display: flex; justify-content: flex-end; align-items: center; margin-top: 10px; }
+    .dlgBtns .btn { margin-left: 8px; }
+    .sec { display: flex; flex-direction: column; padding: 10px 0; border-top: 1px solid var(--line); }
+    .sec.first { border-top: none; }
+    .secTitle { font-size: 10px; font-weight: bold; letter-spacing: 1px; margin-bottom: 6px; color: var(--dim); }
+    .secRow { display: flex; align-items: center; justify-content: space-between; padding: 4px 0; }
+    .secRow .grow { flex: 1 1 auto; min-width: 0; margin-right: 8px; }
+    .sw { width: 30px; height: 16px; border-radius: 8px; background: #3a3733; position: relative; cursor: pointer; flex: 0 0 auto; }
+    .sw .k { position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 6px; background: var(--bone); }
+    .sw.on { background: var(--wasabi); }
+    .sw.on .k { left: 16px; background: var(--night); }
+    .path { font-size: 10px; color: var(--dim); word-break: break-all; }
+    .about { padding: 10px 12px; border-radius: 9px; background: var(--panel); display: flex; flex-direction: column; }
+    .about .row1 { display: flex; align-items: center; justify-content: space-between; }
+    #aboutUpd { margin-top: 4px; color: var(--dim); }
+    .useList { max-height: 160px; overflow-y: auto; margin: 4px 0 4px; padding: 6px 8px; border-radius: 7px; background: var(--panel); font-size: 11px; line-height: 1.6; }
+    #cliPrefixes { margin-top: 4px; }
+  </style>
+</head>
+<body data-update-url="https://raw.githubusercontent.com/tylerodellhq/to-graphics/main/latest.json" data-news-url="https://github.com/tylerodellhq/to-graphics/blob/main/CHANGELOG.md">
+  <div class="head">
+    <div class="logo"><div class="to">TO</div><span class="nm">Graphics</span></div>
+    <div id="addBtn" class="pill" title="Add .mogrt files to your templates"><img src="icons/plus.png" width="11" height="11" alt="" /><span>Add</span></div>
+    <div id="setBtn" class="iconbtn" title="Settings"><img src="icons/settings.png" width="16" height="16" alt="Settings" /></div>
+  </div>
+
+  <div id="updateBar" class="bar"><span id="updateText" class="txt"></span><div id="updateBtn" class="btn small">Update</div></div>
+  <div id="notice" class="bar"><span id="noticeText" class="txt"></span><div id="noticeNo" class="linkbtn">Later</div><div id="noticeYes" class="btn small">OK</div></div>
+
+  <div class="findRow">
+    <sp-textfield id="search" type="search" placeholder="Search templates…" size="s"></sp-textfield>
+  </div>
+  <div id="clients" class="chips"></div>
+  <div id="types" class="chips sub"></div>
+
+  <div id="grid"><div class="empty">Loading your templates…</div></div>
+
+  <div id="detail">
+    <div class="dTop">
+      <div style="flex:1 1 auto;min-width:0">
+        <div id="dName" class="dName"></div>
+        <div id="dMeta" class="dMeta"></div>
+      </div>
+      <div id="dClose" class="iconbtn" title="Close"><img src="icons/close.png" width="11" height="11" alt="Close" /></div>
+    </div>
+    <div class="dRow"><span class="lbl">CLIENT</span><select id="dClient"></select></div>
+    <div class="dRow" style="align-items:flex-start"><span class="lbl" style="margin-top:2px">TYPE</span><div id="dTypes"></div></div>
+    <div class="dBtns">
+      <div id="dAdd" class="btn" title="Add at the playhead (or double-click the template)">Add to timeline</div>
+      <div id="dUses" class="btn ghost small" title="Swap the latest version into this project">Update in project</div>
+      <div class="grow"></div>
+      <div id="dMore" class="linkbtn" title="More">More…</div>
+    </div>
+  </div>
+
+  <div class="foot"><span id="status" class="muted"></span><span id="count" class="muted"></span></div>
+
+  <!-- More for one template -->
+  <dialog id="moreDlg">
+    <div class="dlg">
+      <div id="moreTitle" class="dlgTitle"></div>
+      <div class="sec first">
+        <div class="secRow"><span class="grow">Favourite</span><div id="mFav" class="sw"><div class="k"></div></div></div>
+        <div class="secRow"><span class="grow">Hide from the panel</span><div id="mHide" class="sw"><div class="k"></div></div></div>
+      </div>
+      <div class="sec">
+        <div class="secTitle">PREVIEW</div>
+        <div class="secRow"><span class="grow muted">Take the preview from…</span>
+          <select id="mAt" style="width:110px"><option value="0">Best frame</option><option value="0.15">Start</option><option value="0.35">Early</option><option value="0.5">Middle</option><option value="0.75">Late</option><option value="0.95">End</option></select></div>
+        <div class="secRow"><span class="grow"></span><div id="mRedo" class="btn ghost small">Make preview again</div></div>
+      </div>
+      <div class="sec">
+        <div class="secTitle">NEW VERSION</div>
+        <div class="dlgBody" style="margin:0 0 6px">Pick the new .mogrt to replace this one. It keeps this name, client and type, then offers to update the copies in your project.</div>
+        <div class="secRow"><span class="grow"></span><div id="mReplace" class="btn small">Choose new version…</div></div>
+      </div>
+      <div class="dlgBtns"><div id="mDone" class="btn ghost">Done</div></div>
+    </div>
+  </dialog>
+
+  <!-- Client rename / delete -->
+  <dialog id="cliDlg">
+    <div class="dlg">
+      <div class="dlgTitle">Client</div>
+      <sp-textfield id="cliName" placeholder="Client name"></sp-textfield>
+      <div class="dlgBody" style="margin:10px 0 2px">New templates whose names start with these go to this client automatically (e.g. HL):</div>
+      <sp-textfield id="cliPrefixes" placeholder="HL, HLF"></sp-textfield>
+      <div class="dlgBtns"><div id="cliDel" class="linkbtn" style="margin-right:auto">Delete client</div><div id="cliNo" class="btn ghost">Cancel</div><div id="cliYes" class="btn">Save</div></div>
+    </div>
+  </dialog>
+
+  <!-- Same template added twice -->
+  <dialog id="clashDlg">
+    <div class="dlg">
+      <div class="dlgTitle">Already in your templates</div>
+      <div id="clashText" class="dlgBody"></div>
+      <div class="dlgBtns"><div id="clashSkip" class="linkbtn">Skip</div><div id="clashKeep" class="btn ghost">Keep both</div><div id="clashReplace" class="btn">Replace with new version</div></div>
+    </div>
+  </dialog>
+
+  <!-- Update copies in the project -->
+  <dialog id="usesDlg">
+    <div class="dlg">
+      <div id="usesTitle" class="dlgTitle"></div>
+      <div id="usesText" class="dlgBody"></div>
+      <div id="usesList" class="useList"></div>
+      <div class="dlgBody" style="margin-top:6px">Each one is swapped for the new version in the same place and length, with its text and settings copied across. You can undo in Premiere.</div>
+      <div class="dlgBtns"><div id="usesNo" class="btn ghost">Not now</div><div id="usesYes" class="btn">Update them</div></div>
+    </div>
+  </dialog>
+
+  <!-- Settings -->
+  <dialog id="setDlg">
+    <div class="dlg">
+      <div class="dlgTitle" style="font-size:17px">Settings</div>
+      <div class="sec first">
+        <div class="secTitle">SHOW</div>
+        <div class="secRow"><span class="grow">Caption templates (Captioneer)</span><div id="sCaps" class="sw"><div class="k"></div></div></div>
+        <div class="secRow"><span class="grow">Hidden templates</span><div id="sHidden" class="sw"><div class="k"></div></div></div>
+      </div>
+      <div class="sec">
+        <div class="secTitle">PREVIEWS</div>
+        <div class="secRow"><span class="grow muted">Premiere renders a frame of each template. Needs a project open.</span><div id="sRedoAll" class="btn ghost small">Remake all</div></div>
+      </div>
+      <div class="sec">
+        <div class="secTitle">TEMPLATES FOLDER</div>
+        <div id="sPath" class="path"></div>
+        <div class="secRow"><span class="grow muted">Same folder as Premiere's Local Templates.</span><div id="sLog" class="linkbtn">Copy log</div></div>
+      </div>
+      <div class="about">
+        <div class="row1"><b id="aboutVer">TO Graphics</b><div id="aboutCheck" class="linkbtn">Check for updates</div></div>
+        <div id="aboutUpd"></div>
+      </div>
+      <div class="dlgBtns"><div id="sInstall" class="btn hide">Install update</div><div id="sDone" class="btn ghost">Done</div></div>
+    </div>
+  </dialog>
+
+  <script src="lib/fflate.js"></script>
+  <script src="library.js"></script>
+  <script src="premiere.js"></script>
+  <script src="index.js"></script>
+</body>
+</html>
