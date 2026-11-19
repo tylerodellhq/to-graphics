@@ -1,5 +1,8 @@
 # TO Graphics changes
 
+## 1.1.2
+- Preview size (Small / Medium / Large) moved into Settings, so the top bar is just search and type.
+
 ## 1.1.1
 - Pop-up windows are roomier and scroll instead of cutting text off. No Done buttons: close them with the window's own close button.
 

@@ -48,9 +48,9 @@
     /* toolbar: search, type, size */
     .tools { display: flex; align-items: center; flex: 0 0 auto; margin-bottom: 9px; }
     #search { flex: 1 1 auto; min-width: 0; margin-right: 6px; }
-    #typeSel { flex: 0 0 auto; width: 118px; margin-right: 6px; }
+    #typeSel { flex: 0 0 auto; width: 130px; }
     .seg { display: flex; flex: 0 0 auto; border: 1px solid var(--line2); border-radius: 11px; padding: 1px; }
-    .seg div { padding: 1px 7px; border-radius: 9px; font-size: 10px; font-weight: 700; cursor: pointer; color: var(--dim); }
+    .seg div { padding: 2px 9px; border-radius: 9px; font-size: 10px; font-weight: 700; cursor: pointer; color: var(--dim); }
     .seg div.on { background: var(--bone); color: var(--night); }
 
     /* clients: wrap, never scroll or clip */
@@ -143,7 +143,6 @@
   <div class="tools">
     <sp-textfield id="search" type="search" placeholder="Search" size="s"></sp-textfield>
     <select id="typeSel" title="Filter by type or shape"></select>
-    <div id="sizeSeg" class="seg" title="Preview size"><div data-s="s">S</div><div data-s="m">M</div><div data-s="l">L</div></div>
   </div>
   <div id="clients" class="chips"></div>
 
@@ -249,6 +248,7 @@
         <div class="secTitle">SHOW</div>
         <div class="secRow"><span class="grow">Caption templates (Captioneer)</span><div id="sCaps" class="sw"><div class="k"></div></div></div>
         <div class="secRow"><span class="grow">Hidden templates</span><div id="sHidden" class="sw"><div class="k"></div></div></div>
+        <div class="secRow"><span class="grow">Preview size</span><div id="sizeSeg" class="seg"><div data-s="s">Small</div><div data-s="m">Medium</div><div data-s="l">Large</div></div></div>
       </div>
       <div class="sec">
         <div class="secTitle">CLIENTS</div>
