@@ -1,5 +1,8 @@
 # TO Graphics changes
 
+## 1.0.6
+- Previews are drawn at each template's real shape: 9:16 ones are tall and thin like the comp, with no black box around them.
+
 ## 1.0.5
 - Simpler client window: just the name. Auto-sorting is one plain line with a Change link, and it's learnt when you move a template into a client.
 

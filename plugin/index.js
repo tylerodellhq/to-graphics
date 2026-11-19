@@ -202,14 +202,21 @@ function tile(key) {
   const it = lib.items[key];
   const t = document.createElement("div");
   t.className = "tile" + (key === selected ? " sel" : "") + (it.hidden || (isCaption(it) && !it.unhidden) ? " hid" : "");
-  const frame = document.createElement("div");
-  frame.className = "frame";
-  // The preview is drawn at the template's real shape inside a fixed-height box.
+  // Each preview is the comp itself, at the template's real shape (tall and thin for 9:16),
+  // sitting in a row-height slot so rows stay tidy.
   const sh = L.shapeOf(it);
   const sz = lib.prefs.size || "m";
-  const H = sz === "s" ? 76 : sz === "l" ? 160 : 104, W = sz === "s" ? 68 : sz === "l" ? 150 : 96;
-  let w = W, h = Math.round(W / sh.ratio);
-  if (h > H) { h = H; w = Math.round(H * sh.ratio); }
+  const H = sz === "s" ? 120 : sz === "l" ? 280 : 190, W = sz === "s" ? 150 : sz === "l" ? 320 : 220;
+  let h = H, w = Math.round(H * sh.ratio);
+  if (w > W) { w = W; h = Math.round(W / sh.ratio); }
+  const slot = document.createElement("div");
+  slot.className = "slot";
+  slot.style.height = H + "px";
+  const frame = document.createElement("div");
+  frame.className = "frame";
+  frame.style.width = w + "px"; frame.style.height = h + "px";
+  slot.appendChild(frame);
+  t.style.width = Math.max(w, 96) + 14 + "px";
   const ph = document.createElement("div");
   ph.className = "ph";
   ph.style.width = w + "px"; ph.style.height = h + "px";
@@ -225,7 +232,7 @@ function tile(key) {
   star.title = it.fav ? "Remove from favourites" : "Add to favourites";
   star.addEventListener("click", (ev) => { ev.stopPropagation(); it.fav = !it.fav; L.save(); render(); });
   frame.appendChild(star);
-  t.appendChild(frame);
+  t.appendChild(slot);
   const n = document.createElement("div"); n.className = "tname"; n.textContent = it.name || key; t.appendChild(n);
   const meta = [clientFilter === "all" ? "" : clientName(it.client), (it.types || [])[0], fmtDur(it.dur)].filter(Boolean).join(" · ");
   const m = document.createElement("div"); m.className = "tmeta"; m.textContent = (it.fav ? "★ " : "") + meta; t.appendChild(m);
