@@ -59,7 +59,7 @@ async function thumbUrl(key) {
   if (hit && hit.v === it.thumbV && hit.file === it.thumb) return hit.url;
   try {
     const f = await (await L.thumbsFolder()).getEntry(it.thumb);
-    const url = "data:image/jpeg;base64," + b64(await f.read({ format: storage.formats.binary }));
+    const url = (/\.png$/i.test(it.thumb) ? "data:image/png;base64," : "data:image/jpeg;base64,") + b64(await f.read({ format: storage.formats.binary }));
     thumbCache.set(key, { v: it.thumbV, file: it.thumb, url });
     return url;
   } catch (e) { return ""; }
@@ -169,7 +169,7 @@ async function render() {
     if (g && groups.size > 1) {
       const h = document.createElement("div");
       h.className = "group";
-      h.textContent = g.toUpperCase();
+      h.textContent = g;   // as typed (Tyler names some clients in lowercase)
       grid.appendChild(h);
     }
     for (const k of groups.get(g)) { const t = tile(k); tiles.push([k, t]); grid.appendChild(t); }
@@ -426,7 +426,7 @@ async function previews(list, force) {
   }
 }
 function needPreview() {
-  return keys().filter((k) => { const it = lib.items[k]; return visible(it) && (!it.thumb || it.thumbFor !== it.mtime) && !it.noPreview; });
+  return keys().filter((k) => { const it = lib.items[k]; return visible(it) && (!it.thumb || it.thumbFor !== it.mtime) && it.previewTried !== it.mtime; });
 }
 
 // ---------- notice bar (one at a time) ----------
@@ -615,6 +615,8 @@ $("search").addEventListener("input", () => render());
     if (lib.prefs.showCaptions === undefined) lib.prefs.showCaptions = false;
   } catch (e) { setStatus(e.message || String(e), "err"); }
   applySize();
+  // 1.0.2: previews made before the Media Offline check (JPEGs) are remade once.
+  for (const it of Object.values(lib.items)) if (it.thumb && /\.jpg$/i.test(it.thumb) && !it.pngRedo) { it.thumbFor = 0; it.previewTried = 0; it.pngRedo = true; }
   // First run: everything already in the folder is not "New".
   const firstRun = !keys().length;
   await refresh(true);

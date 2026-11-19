@@ -1,5 +1,9 @@
 # TO Graphics changes
 
+## 1.0.2
+- Previews wait for the template to load: a red Media Offline frame is spotted and rendered again, and the busiest real frame is kept (previews are now PNGs). Old previews are remade once.
+- Client headings show names exactly as typed (no forced capitals).
+
 ## 1.0.1
 - Star on each preview for favourites, Small/Medium/Large preview size, Show in Finder, Open folder, and Remove from my templates (a copy is kept in .to-graphics/removed).
 

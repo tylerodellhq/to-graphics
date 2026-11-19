@@ -1,5 +1,5 @@
 {
-  "version": "1.0.1",
+  "version": "1.0.2",
   "url": "https://raw.githubusercontent.com/tylerodellhq/to-graphics/main/TOGraphics.ccx",
-  "notes": "Favourite stars, preview sizes, Show in Finder and Remove."
+  "notes": "Previews wait for templates to load, so no more Media Offline previews."
 }

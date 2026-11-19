@@ -182,41 +182,57 @@
           if (curSize !== w + "x" + h) { await setFrameSize(project, scratch, w, h); curSize = w + "x" + h; }
           const placed = insertMogrt(project, scratch, L.pathOf(key), 0, 0);
           if (!placed.length) throw new Error("insert gave nothing");
-          await wait(300);
+          // Give After Effects a moment to load the template before the first frame.
+          await wait(900);
           const dur = it.dur || 5;
           // Small previews: about 360px on the long side.
           const scale = 360 / Math.max(w, h);
           const pw = Math.max(2, Math.round(w * scale / 2) * 2), ph = Math.max(2, Math.round(h * scale / 2) * 2);
           const base = "t" + hash(key);
-          let best = null, bestSize = 0;
+          const made = [];
+          let best = null, bestScore = -1, offlineSeen = false, lastRed = null;
           const points = it.thumbAt ? [it.thumbAt] : [0.5, 0.75, 0.3];
           for (let i = 0; i < points.length; i++) {
-            const name = `${base}_${i}.jpg`, full = dir.replace(/[\/\\]+$/, "") + "/" + name;
             const at = T(Math.min(dur - 0.05, dur * points[i]));
-            let r = false;
-            try { r = await ppro.Exporter.exportSequenceFrame(scratch, at, name, dir, pw, ph); } catch (e) { note("frame threw " + e); }
-            if (!(await landed(full, 8))) { try { r = await ppro.Exporter.exportSequenceFrame(scratch, at, full, dir, pw, ph); } catch (e) {} }
-            if (await landed(full, 20)) {
+            // Premiere shows a red Media Offline frame until the template has loaded: if that's
+            // what came back (or a blank frame on the first tries), wait longer and render again.
+            for (let tryN = 0; tryN < 7; tryN++) {
+              const name = `${base}_${i}_${tryN}.png`, full = dir.replace(/[\/\\]+$/, "") + "/" + name;
+              let r = false;
+              try { r = await ppro.Exporter.exportSequenceFrame(scratch, at, name, dir, pw, ph); } catch (e) { note("frame threw " + e); }
+              if (!(await landed(full, 8))) { try { r = await ppro.Exporter.exportSequenceFrame(scratch, at, full, dir, pw, ph); } catch (e) {} }
+              if (!(await landed(full, 20))) { note(`no frame for ${key} at ${points[i]} (${r})`); break; }
+              made.push(name);
               await wait(150);
-              const s = await sizeOf(full);
-              // More bytes in a JPEG = more going on in the frame. Keep the busiest.
-              if (s > bestSize) { bestSize = s; best = name; }
-            } else note(`no frame for ${key} at ${points[i]} (${r})`);
+              let look = null;
+              try { look = window.TOPixels.analyse(await (await thumbs.getEntry(name)).read({ format: storage.formats.binary })); } catch (e) {}
+              if (look && look.offline) { offlineSeen = true; lastRed = name; note(`${key}: offline frame, waiting (try ${tryN + 1})`); await wait(800 + tryN * 700); continue; }
+              if (look && look.blank && tryN < 2) { await wait(800); continue; }
+              const score = look ? look.score : await sizeOf(full) / 1000;
+              if (score > bestScore) { bestScore = score; best = name; }
+              break;
+            }
           }
+          // Still red after all that: it may just be a red template, so keep the frame anyway.
+          if (!best && lastRed) { best = lastRed; note(`${key}: kept a mostly-red frame (red template, or still offline)`); }
           await removeTrackItems(project, scratch, placed);
+          it.previewTried = it.mtime;
           if (best) {
-            // Keep the chosen one as <base>.jpg, delete the others.
-            const final = `${base}.jpg`;
-            const src = await thumbs.getEntry(best);
-            const data = await src.read({ format: storage.formats.binary });
+            // Keep the chosen one as <base>.png, delete the others.
+            const final = `${base}.png`;
+            const data = await (await thumbs.getEntry(best)).read({ format: storage.formats.binary });
             const out = await thumbs.createFile(final, { overwrite: true });
             await out.write(data, { format: storage.formats.binary });
-            for (let i = 0; i < points.length; i++) { try { await (await thumbs.getEntry(`${base}_${i}.jpg`)).delete(); } catch (e) {} }
+            for (const n of made) { try { await (await thumbs.getEntry(n)).delete(); } catch (e) {} }
+            if (it.thumb && it.thumb !== final) { try { await (await thumbs.getEntry(it.thumb)).delete(); } catch (e) {} }
             it.thumb = final;
             it.thumbFor = it.mtime;
             it.thumbV = (it.thumbV || 0) + 1;
             ok = true;
             done++;
+          } else {
+            for (const n of made) { try { await (await thumbs.getEntry(n)).delete(); } catch (e) {} }
+            if (offlineSeen) note(`${key}: still Media Offline after waiting, no preview kept`);
           }
         } catch (e) { note(`preview ${key}: ${e && e.message ? e.message : e}`); }
         L.save();
