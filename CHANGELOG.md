@@ -1,5 +1,10 @@
 # TO Graphics changes
 
+## 1.1.0
+- Design pass to the brand guidelines: Tyler Odell + Wasabi pill header, TO Grit headings, Archivo text, Night/Bone/Wasabi only.
+- Cleaner layout: client chips wrap (no cut-off or sideways scrolling), type and shape filter is one dropdown, S/M/L size switch, empty clients hidden, no ratio badges (the shape shows it), stars only on hover or when favourited.
+- Template details: client and type are two dropdowns instead of a wall of chips.
+
 ## 1.0.6
 - Previews are drawn at each template's real shape: 9:16 ones are tall and thin like the comp, with no black box around them.
 

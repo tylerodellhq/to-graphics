@@ -35,9 +35,10 @@ UXP, manifest v5, Premiere 25.6+, updates through Creative Cloud (.ccx).
 - Rename (More): rewrites capsuleName in definition.json + renames the file, and re-stamps it so it is not seen as a new version.
 - UXP has no drag and drop, so templates are added with Add (file picker) or straight from AE.
 
-## Design
+## Design (1.1.0 pass)
 Tyler Odell Creative colours: Night background, Bone text, Wasabi (#E9F056) for the main action and
-selection, Sky (#8FCAFF) only for "Updated". One Wasabi button per area.
+selection, Sky (#8FCAFF) only for "Updated". One Wasabi button per area. TO Grit (fonts/) for headings,
+Archivo for text. Filters must wrap or be dropdowns: never clip text or scroll sideways (Tyler hated it).
 
 ## Don't
 - Never put client names in code or anything pushed: they live only in library.json on Tyler's Mac.

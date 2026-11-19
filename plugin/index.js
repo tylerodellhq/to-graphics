@@ -65,7 +65,7 @@ async function thumbUrl(key) {
   } catch (e) { return ""; }
 }
 
-// ---------- chips ----------
+// ---------- client chips (wrap, never scroll) ----------
 function renderClients() {
   const box = $("clients");
   box.innerHTML = "";
@@ -76,33 +76,18 @@ function renderClients() {
     d.textContent = label;
     if (n !== undefined) { const s = document.createElement("span"); s.className = "n"; s.textContent = n; d.appendChild(s); }
     if (title) d.title = title;
-    const isClient = id !== "all" && id !== "fav" && id !== "none";
-    d.addEventListener("click", () => {
-      if (isClient && clientFilter === id) { editClient(id); return; }   // click the chosen client again to rename it
-      clientFilter = id; typeFilter = ""; render();
-    });
+    d.addEventListener("click", () => { clientFilter = id; render(); });
     box.appendChild(d);
   };
   chip("all", "All", all.length);
   const favs = all.filter((k) => lib.items[k].fav).length;
-  if (favs) chip("fav", "★", favs, "Favourites");
-  const sorted = [...lib.clients].sort((a, b) => a.name.localeCompare(b.name));
-  for (const c of sorted) chip(c.id, c.name, all.filter((k) => lib.items[k].client === c.id).length, clientFilter === c.id ? "Click again to rename" : "");
+  if (favs) chip("fav", "★ Favourites", favs);
+  for (const c of [...lib.clients].sort((a, b) => a.name.localeCompare(b.name))) {
+    const n = all.filter((k) => lib.items[k].client === c.id).length;
+    if (n || clientFilter === c.id) chip(c.id, c.name, n, "Rename clients in Settings");
+  }
   const none = all.filter((k) => !lib.items[k].client || !L.clientById(lib.items[k].client)).length;
   if (none) chip("none", "Unsorted", none);
-  if (L.clientById(clientFilter)) {
-    const ren = document.createElement("div");
-    ren.className = "chip add";
-    ren.textContent = "Rename";
-    ren.title = "Rename this client";
-    ren.addEventListener("click", () => editClient(clientFilter));
-    box.appendChild(ren);
-  }
-  const add = document.createElement("div");
-  add.className = "chip add";
-  add.textContent = "+ Client";
-  add.addEventListener("click", () => editClient(null));
-  box.appendChild(add);
 }
 
 function inClient(it) {
@@ -112,26 +97,22 @@ function inClient(it) {
   return it.client === clientFilter;
 }
 
+// Type + shape filter: one dropdown instead of a second row of chips.
 function renderTypes(list) {
-  const box = $("types");
-  box.innerHTML = "";
-  const counts = new Map();
-  for (const k of list) for (const t of lib.items[k].types || []) counts.set(t, (counts.get(t) || 0) + 1);
-  const shapes = new Map();
-  for (const k of list) { const s = L.shapeOf(lib.items[k]); if (s.tag) shapes.set(s.tag, (shapes.get(s.tag) || 0) + 1); }
-  if (counts.size < 1 && shapes.size < 2) { box.style.display = "none"; return; }
-  box.style.display = "";
-  const chip = (id, label) => {
-    const d = document.createElement("div");
-    d.className = "chip" + (typeFilter === id ? " on" : "");
-    d.textContent = label;
-    d.addEventListener("click", () => { typeFilter = typeFilter === id ? "" : id; render(); });
-    box.appendChild(d);
-  };
-  chip("", "Any type");
-  if (shapes.size > 1) for (const s of [...shapes.keys()].sort()) chip("shape:" + s, s);
-  for (const t of L.TYPE_NAMES) if (counts.has(t)) chip(t, t);
+  const sel = $("typeSel");
+  const counts = new Map(), shapes = new Map();
+  for (const k of list) {
+    for (const t of lib.items[k].types || []) counts.set(t, (counts.get(t) || 0) + 1);
+    const s = L.shapeOf(lib.items[k]); if (s.tag) shapes.set(s.tag, (shapes.get(s.tag) || 0) + 1);
+  }
+  if (typeFilter && !(typeFilter.startsWith("shape:") ? shapes.has(typeFilter.slice(6)) : counts.has(typeFilter))) typeFilter = "";
+  sel.innerHTML = "";
+  const opt = (v, label) => { const o = document.createElement("option"); o.value = v; o.textContent = label; if (v === typeFilter) o.selected = true; sel.appendChild(o); };
+  opt("", "All types");
+  for (const t of L.TYPE_NAMES) if (counts.has(t)) opt(t, `${t} (${counts.get(t)})`);
+  if (shapes.size > 1) for (const s of [...shapes.keys()].sort()) opt("shape:" + s, `${s} only`);
 }
+$("typeSel").addEventListener("change", () => { typeFilter = $("typeSel").value; render(); });
 function inType(it) {
   if (!typeFilter) return true;
   if (typeFilter.startsWith("shape:")) return L.shapeOf(it).tag === typeFilter.slice(6);
@@ -179,8 +160,9 @@ async function render() {
   for (const g of order) {
     if (g && groups.size > 1) {
       const h = document.createElement("div");
-      h.className = "group";
+      h.className = "group disp";
       h.textContent = g;   // as typed (Tyler names some clients in lowercase)
+      const n = document.createElement("span"); n.className = "n"; n.textContent = groups.get(g).length; h.appendChild(n);
       grid.appendChild(h);
     }
     for (const k of groups.get(g)) { const t = tile(k); tiles.push([k, t]); grid.appendChild(t); }
@@ -206,7 +188,7 @@ function tile(key) {
   // sitting in a row-height slot so rows stay tidy.
   const sh = L.shapeOf(it);
   const sz = lib.prefs.size || "m";
-  const H = sz === "s" ? 120 : sz === "l" ? 280 : 190, W = sz === "s" ? 150 : sz === "l" ? 320 : 220;
+  const H = sz === "s" ? 110 : sz === "l" ? 250 : 160, W = sz === "s" ? 150 : sz === "l" ? 300 : 210;
   let h = H, w = Math.round(H * sh.ratio);
   if (w > W) { w = W; h = Math.round(W / sh.ratio); }
   const slot = document.createElement("div");
@@ -222,20 +204,20 @@ function tile(key) {
   ph.style.width = w + "px"; ph.style.height = h + "px";
   ph.textContent = it.thumb ? "" : "No preview yet";
   frame.appendChild(ph);
-  if (sh.tag) { const b = document.createElement("div"); b.className = "badge"; b.textContent = sh.tag; frame.appendChild(b); }
   const fresh = it.updated && Date.now() - it.updated < 3 * 864e5 ? "upd" : it.added && Date.now() - it.added < 3 * 864e5 && it.seen !== true ? "new" : "";
-  if (fresh) { const b = document.createElement("div"); b.className = "badge " + fresh; b.style.left = "auto"; b.style.right = "auto"; b.style.bottom = "4px"; b.style.top = "auto"; b.style.left = "4px"; b.textContent = fresh === "upd" ? "Updated" : "New"; frame.appendChild(b); }
+  if (fresh) { const b = document.createElement("div"); b.className = "badge " + fresh; b.textContent = fresh === "upd" ? "Updated" : "New"; frame.appendChild(b); }
   const star = document.createElement("img");
-  star.className = "star"; star.width = 12; star.height = 12;
+  star.className = "star" + (it.fav ? " on" : ""); star.width = 12; star.height = 12;
   star.src = it.fav ? "icons/star_on.png" : "icons/star_off_d.png";
-  star.style.opacity = it.fav ? "1" : "0.45";
   star.title = it.fav ? "Remove from favourites" : "Add to favourites";
   star.addEventListener("click", (ev) => { ev.stopPropagation(); it.fav = !it.fav; L.save(); render(); });
   frame.appendChild(star);
   t.appendChild(slot);
   const n = document.createElement("div"); n.className = "tname"; n.textContent = it.name || key; t.appendChild(n);
-  const meta = [clientFilter === "all" ? "" : clientName(it.client), (it.types || [])[0], fmtDur(it.dur)].filter(Boolean).join(" · ");
-  const m = document.createElement("div"); m.className = "tmeta"; m.textContent = (it.fav ? "★ " : "") + meta; t.appendChild(m);
+  // Client only when results aren't grouped by client already.
+  const grouped = clientFilter === "all" && !String($("search").value || "").trim() && !typeFilter;
+  const meta = [grouped || L.clientById(clientFilter) ? "" : clientName(it.client), (it.types || [])[0], fmtDur(it.dur)].filter(Boolean).join(" · ");
+  const m = document.createElement("div"); m.className = "tmeta"; m.textContent = meta; t.appendChild(m);
   t.addEventListener("click", () => { selected = key; it.seen = true; for (const x of document.querySelectorAll(".tile.sel")) x.classList.remove("sel"); t.classList.add("sel"); renderDetail(); });
   t.addEventListener("dblclick", () => addToTimeline(key));
   t.title = it.name + (it.file && it.file.replace(/\.mogrt$/i, "") !== it.name ? `\n${it.file}` : "") + "\nDouble-click to add at the playhead";
@@ -256,22 +238,20 @@ function renderDetail() {
   opt("", "Unsorted");
   for (const c of [...lib.clients].sort((a, b) => a.name.localeCompare(b.name))) opt(c.id, c.name);
   opt("__new", "New client…");
-  const tb = $("dTypes");
-  tb.innerHTML = "";
-  for (const t of L.TYPE_NAMES) {
-    const d = document.createElement("div");
-    d.className = "chip" + ((it.types || []).includes(t) ? " on" : "");
-    d.textContent = t;
-    d.addEventListener("click", () => {
-      const set = new Set(it.types || []);
-      set.has(t) ? set.delete(t) : set.add(t);
-      it.types = L.TYPE_NAMES.filter((x) => set.has(x));
-      L.save();
-      d.classList.toggle("on");
-    });
-    tb.appendChild(d);
-  }
+  const ts = $("dType");
+  ts.innerHTML = "";
+  const cur = (it.types || [])[0] || "";
+  const topt = (v, label) => { const o = document.createElement("option"); o.value = v; o.textContent = label; if (v === cur) o.selected = true; ts.appendChild(o); };
+  topt("", "No type");
+  for (const t of L.TYPE_NAMES) topt(t, t);
 }
+$("dType").addEventListener("change", () => {
+  const it = lib.items[selected];
+  if (!it) return;
+  it.types = $("dType").value ? [$("dType").value] : [];
+  L.save();
+  render();
+});
 
 $("dClient").addEventListener("change", async () => {
   const it = lib.items[selected];
@@ -666,15 +646,11 @@ $("updateBtn").addEventListener("click", installUpdate);
 // ---------- preview size (S / M / L, remembered) ----------
 function applySize() {
   const s = lib.prefs.size || "m";
-  document.body.classList.remove("sz-s", "sz-l");
-  if (s !== "m") document.body.classList.add("sz-" + s);
-  $("sizeBtn").textContent = s === "s" ? "Small" : s === "l" ? "Large" : "Medium";
+  for (const d of document.querySelectorAll("#sizeSeg div")) d.classList.toggle("on", d.getAttribute("data-s") === s);
 }
-$("sizeBtn").addEventListener("click", () => {
-  const order = ["s", "m", "l"];
-  lib.prefs.size = order[(order.indexOf(lib.prefs.size || "m") + 1) % 3];
-  L.save(); applySize(); render();
-});
+for (const d of document.querySelectorAll("#sizeSeg div")) {
+  d.addEventListener("click", () => { lib.prefs.size = d.getAttribute("data-s"); L.save(); applySize(); render(); });
+}
 
 // ---------- start ----------
 $("search").addEventListener("input", () => render());

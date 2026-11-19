@@ -3,163 +3,169 @@
 <head>
   <meta charset="utf-8" />
   <style>
-    /* Tyler Odell Creative colours: Night, Bone, Wasabi (main action), Sky (one touch: updates). */
-    :root { --night: #121110; --panel: #1c1a18; --tile: #24221f; --line: rgba(239,233,220,0.12); --bone: #EFE9DC; --dim: rgba(239,233,220,0.55); --wasabi: #E9F056; --sky: #8FCAFF; --err: #FF7A6B; }
+    /* Tyler Odell Creative: Night ground, Bone type, Wasabi = main action + selection, Sky = "Updated" only.
+       TO Grit for headings, Archivo for everything else. */
+    @font-face { font-family: "TO Grit"; src: url("fonts/to-grit.woff2") format("woff2"); font-weight: 800; }
+    @font-face { font-family: "Archivo"; src: url("fonts/archivo-latin.woff2") format("woff2"); font-weight: 100 900; }
+    :root { --night: #0E0D0C; --raise: #181614; --raise2: #22201d; --line: rgba(239,233,220,0.10); --line2: rgba(239,233,220,0.22);
+      --bone: #EFE9DC; --dim: rgba(239,233,220,0.56); --faint: rgba(239,233,220,0.36); --wasabi: #E9F056; --sky: #8FCAFF; --err: #FF7A6B; }
     html, body { height: 100%; }
-    body { margin: 0; padding: 10px 12px; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
-      background: var(--night); color: var(--bone); font-size: 12px; font-family: var(--uxp-host-font-family, sans-serif); }
+    body { margin: 0; padding: 12px 14px 10px; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
+      background: var(--night); color: var(--bone); font-size: 12px; font-family: "Archivo", var(--uxp-host-font-family, sans-serif); }
     .muted { color: var(--dim); }
     .hide { display: none; }
+    .disp { font-family: "TO Grit", "Archivo", sans-serif; font-weight: 800; letter-spacing: -0.3px; }
 
-    /* header */
-    .head { display: flex; align-items: center; flex: 0 0 auto; margin-bottom: 8px; }
+    /* header: name + Wasabi pill, like the logo */
+    .head { display: flex; align-items: center; flex: 0 0 auto; margin-bottom: 12px; }
     .logo { display: flex; align-items: center; flex: 1 1 auto; min-width: 0; }
-    .logo .to { width: 22px; height: 22px; border-radius: 11px; background: var(--wasabi); color: var(--night); font-weight: 900; font-size: 10px; display: flex; align-items: center; justify-content: center; margin-right: 7px; flex: 0 0 auto; }
-    .logo .nm { font-weight: 800; font-size: 14px; letter-spacing: -0.2px; }
-    .iconbtn { flex: 0 0 auto; padding: 4px; margin-left: 4px; cursor: pointer; opacity: 0.65; }
+    .logo .nm { font-size: 17px; margin-right: 6px; }
+    .logo .tag { padding: 1px 9px 2px; border-radius: 10px; background: var(--wasabi); color: var(--night); font-size: 13px; }
+    .iconbtn { flex: 0 0 auto; padding: 5px; margin-left: 2px; cursor: pointer; opacity: 0.6; }
     .iconbtn:hover { opacity: 1; }
     .iconbtn img { display: block; }
-    .pill { flex: 0 0 auto; display: flex; align-items: center; padding: 2px 10px 2px 8px; border-radius: 11px; background: #2c2a27; border: 1px solid #2c2a27; font-size: 11px; font-weight: bold; cursor: pointer; margin-left: 6px; }
-    .pill img { margin-right: 4px; }
-    .pill:hover { background: #3a3733; border-color: #3a3733; }
 
     /* buttons */
-    .btn { flex: 0 0 auto; padding: 4px 12px; border-radius: 13px; font-weight: bold; font-size: 12px; cursor: pointer; text-align: center;
+    .btn { flex: 0 0 auto; padding: 5px 14px; border-radius: 14px; font-weight: 700; font-size: 12px; cursor: pointer; text-align: center; white-space: nowrap;
       background: var(--wasabi); color: var(--night); border: 1px solid var(--wasabi); }
     .btn:hover { background: #f2f78a; border-color: #f2f78a; }
-    .btn.ghost { background: transparent; color: var(--bone); border-color: rgba(239,233,220,0.3); }
+    .btn.ghost { background: transparent; color: var(--bone); border-color: var(--line2); }
     .btn.ghost:hover { border-color: var(--bone); }
-    .btn.sky { background: var(--sky); border-color: var(--sky); }
-    .btn.small { padding: 2px 10px; font-size: 11px; border-radius: 10px; }
-    .btn.off { background: #2c2a27; border-color: #2c2a27; color: #77736b; cursor: default; }
+    .btn.small { padding: 3px 11px; font-size: 11px; border-radius: 11px; }
     .linkbtn { cursor: pointer; color: var(--dim); padding: 2px 4px; white-space: nowrap; }
     .linkbtn:hover { color: var(--bone); }
+    .ghostpill { display: flex; align-items: center; padding: 3px 11px 3px 9px; border-radius: 12px; border: 1px solid var(--line2); font-weight: 700; font-size: 11px; cursor: pointer; white-space: nowrap; }
+    .ghostpill:hover { border-color: var(--bone); }
+    .ghostpill img { margin-right: 5px; }
 
     /* bars */
-    .bar { display: none; align-items: center; padding: 6px 8px; margin: 0 0 7px; border-radius: 8px; border: 1px solid var(--sky); flex: 0 0 auto; }
+    .bar { display: none; align-items: center; padding: 7px 9px; margin: 0 0 10px; border-radius: 9px; background: var(--raise); border: 1px solid var(--line); flex: 0 0 auto; }
     .bar.on { display: flex; }
-    .bar .txt { flex: 1 1 auto; min-width: 0; margin-right: 8px; line-height: 1.35; }
-    .bar .btn { margin-left: 5px; }
-    #notice.work { border-color: var(--line); }
+    .bar .txt { flex: 1 1 auto; min-width: 0; margin-right: 8px; line-height: 1.4; }
+    .bar .btn { margin-left: 6px; }
+    #updateBar { border-color: var(--sky); }
 
-    /* search + chips */
-    .findRow { display: flex; align-items: center; flex: 0 0 auto; margin-bottom: 6px; }
-    #search { flex: 1 1 auto; min-width: 0; }
-    #favBtn { margin-left: 6px; }
-    .chips { display: flex; flex: 0 0 auto; overflow-x: auto; margin-bottom: 6px; padding-bottom: 2px; }
-    .chip { flex: 0 0 auto; padding: 2px 10px; margin-right: 5px; border-radius: 10px; cursor: pointer; white-space: nowrap; background: #2c2a27; border: 1px solid #2c2a27; font-weight: bold; }
-    .chip .n { font-weight: normal; color: var(--dim); margin-left: 4px; }
-    .chip.on { background: var(--bone); border-color: var(--bone); color: var(--night); }
-    .chip.on .n { color: rgba(18,17,16,0.55); }
-    .chip.add { background: transparent; border: 1px dashed rgba(239,233,220,0.35); color: var(--dim); font-weight: normal; }
-    .chips.sub .chip { background: transparent; border: 1px solid rgba(239,233,220,0.25); font-size: 11px; padding: 1px 9px; border-radius: 9px; font-weight: normal; }
-    .chips.sub .chip.on { border-color: var(--bone); color: var(--bone); background: transparent; font-weight: bold; }
+    /* toolbar: search, type, size */
+    .tools { display: flex; align-items: center; flex: 0 0 auto; margin-bottom: 9px; }
+    #search { flex: 1 1 auto; min-width: 0; margin-right: 6px; }
+    #typeSel { flex: 0 0 auto; width: 118px; margin-right: 6px; }
+    .seg { display: flex; flex: 0 0 auto; border: 1px solid var(--line2); border-radius: 11px; padding: 1px; }
+    .seg div { padding: 1px 7px; border-radius: 9px; font-size: 10px; font-weight: 700; cursor: pointer; color: var(--dim); }
+    .seg div.on { background: var(--bone); color: var(--night); }
+
+    /* clients: wrap, never scroll or clip */
+    .chips { display: flex; flex-wrap: wrap; flex: 0 0 auto; margin-bottom: 6px; }
+    .chip { flex: 0 0 auto; padding: 3px 11px; margin: 0 6px 6px 0; border-radius: 12px; cursor: pointer; white-space: nowrap;
+      border: 1px solid var(--line2); font-weight: 700; font-size: 11px; color: var(--bone); }
+    .chip:hover { border-color: var(--bone); }
+    .chip .n { font-weight: 400; color: var(--faint); margin-left: 5px; }
+    .chip.on { background: var(--wasabi); border-color: var(--wasabi); color: var(--night); }
+    .chip.on .n { color: rgba(14,13,12,0.55); }
 
     /* grid */
-    #grid { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-wrap: wrap; align-content: flex-start; }
-    .group { width: 100%; font-size: 11px; font-weight: bold; letter-spacing: 0.3px; color: var(--dim); margin: 6px 0 6px 2px; }
-    .tile { position: relative; margin: 0 8px 10px 0; border-radius: 9px; padding: 5px 5px 6px; box-sizing: border-box;
-      background: var(--tile); border: 2px solid var(--tile); cursor: pointer; display: flex; flex-direction: column; }
-    .tile:hover { border-color: #3a3733; }
-    .tile.sel { border-color: var(--wasabi); }
-    .tile.hid { opacity: 0.45; }
+    #grid { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-wrap: wrap; align-content: flex-start; padding-top: 2px; border-top: 1px solid var(--line); }
+    .group { width: 100%; font-size: 15px; margin: 12px 0 8px 2px; display: flex; align-items: baseline; }
+    .group .n { font-family: "Archivo", sans-serif; font-weight: 400; font-size: 11px; color: var(--faint); margin-left: 6px; letter-spacing: 0; }
+    .tile { position: relative; margin: 0 8px 12px 0; border-radius: 10px; padding: 6px 6px 8px; box-sizing: border-box;
+      border: 1px solid transparent; cursor: pointer; display: flex; flex-direction: column; }
+    .tile:hover { background: var(--raise); }
+    .tile.sel { background: var(--raise); border-color: var(--wasabi); }
+    .tile.hid { opacity: 0.4; }
     /* slot = fixed-height row space; frame = the comp itself, at the template's real shape */
-    .slot { display: flex; align-items: center; justify-content: center; }
-    .frame { border-radius: 4px; background: #000; border: 1px solid rgba(239,233,220,0.16); overflow: hidden; position: relative; box-sizing: content-box; }
+    .slot { display: flex; align-items: flex-end; justify-content: center; }
+    .frame { border-radius: 4px; background: #000; border: 1px solid var(--line); overflow: hidden; position: relative; box-sizing: content-box; }
     .frame img { display: block; }
-    .ph { display: flex; align-items: center; justify-content: center; color: var(--dim); font-size: 9px; text-align: center; }
-    .tname { margin-top: 5px; font-size: 11px; font-weight: bold; line-height: 1.25; max-height: 28px; overflow: hidden; }
-    .tmeta { font-size: 10px; color: var(--dim); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .badge { position: absolute; top: 4px; left: 4px; padding: 0 5px; border-radius: 6px; font-size: 9px; font-weight: bold; line-height: 14px; background: rgba(18,17,16,0.8); color: var(--bone); }
+    .ph { display: flex; align-items: center; justify-content: center; color: var(--faint); font-size: 9px; text-align: center; }
+    .tname { margin-top: 7px; font-size: 11.5px; font-weight: 700; line-height: 1.3; }
+    .tmeta { font-size: 10.5px; color: var(--dim); margin-top: 2px; }
+    .badge { position: absolute; left: 4px; bottom: 4px; padding: 0 6px; border-radius: 7px; font-size: 9px; font-weight: 700; line-height: 15px; }
     .badge.new { background: var(--wasabi); color: var(--night); }
     .badge.upd { background: var(--sky); color: var(--night); }
-    .star { position: absolute; top: 3px; right: 3px; padding: 2px; }
-    .empty { width: 100%; padding: 24px 8px; text-align: center; color: var(--dim); line-height: 1.5; }
+    .star { position: absolute; top: 4px; right: 4px; padding: 2px; opacity: 0; }
+    .tile:hover .star { opacity: 0.6; }
+    .star.on, .tile:hover .star.on { opacity: 1; }
+    .empty { width: 100%; padding: 30px 10px; text-align: center; color: var(--dim); line-height: 1.5; }
 
     /* detail */
-    #detail { flex: 0 0 auto; border-top: 1px solid var(--line); padding-top: 8px; margin-top: 2px; display: none; flex-direction: column; }
+    #detail { flex: 0 0 auto; border-top: 1px solid var(--line); padding-top: 10px; margin-top: 2px; display: none; flex-direction: column; }
     #detail.on { display: flex; }
     .dTop { display: flex; align-items: flex-start; }
-    .dName { flex: 1 1 auto; min-width: 0; font-weight: bold; font-size: 13px; }
-    .dMeta { font-size: 11px; color: var(--dim); margin-top: 2px; }
-    .dRow { display: flex; align-items: center; margin-top: 7px; flex-wrap: wrap; }
-    .dRow .lbl { font-size: 10px; letter-spacing: 1px; font-weight: bold; color: var(--dim); width: 50px; flex: 0 0 auto; }
-    #dClient { flex: 1 1 auto; min-width: 0; }
-    #dTypes { display: flex; flex-wrap: wrap; flex: 1 1 0; min-width: 0; }
-    #dTypes .chip { font-size: 10px; padding: 0 8px; line-height: 17px; margin: 0 4px 4px 0; font-weight: normal; background: transparent; border: 1px solid rgba(239,233,220,0.22); color: var(--dim); }
-    #dTypes .chip.on { border-color: var(--bone); color: var(--bone); font-weight: bold; }
-    .dBtns { display: flex; align-items: center; margin-top: 8px; }
+    .dName { font-size: 15px; line-height: 1.2; }
+    .dMeta { font-size: 11px; color: var(--dim); margin-top: 3px; }
+    .dRow { display: flex; align-items: center; margin-top: 9px; }
+    .dRow select { flex: 1 1 0; min-width: 0; }
+    .dRow select + select { margin-left: 6px; }
+    .dBtns { display: flex; align-items: center; margin-top: 10px; }
     .dBtns .btn { margin-right: 6px; }
     .dBtns .grow { flex: 1 1 auto; }
 
     /* footer */
-    .foot { flex: 0 0 auto; padding-top: 6px; display: flex; align-items: center; font-size: 11px; min-height: 16px; }
-    #status { flex: 1 1 auto; min-width: 0; }
+    .foot { flex: 0 0 auto; padding-top: 7px; display: flex; align-items: center; font-size: 11px; min-height: 16px; }
+    #status { flex: 1 1 auto; min-width: 0; margin-right: 8px; }
     #status.err { color: var(--err); }
-    #status.ok { color: var(--sky); }
+    #status.ok { color: var(--bone); }
+    #count { flex: 0 0 auto; color: var(--faint); }
 
     /* dialogs */
     dialog { background: var(--night); color: var(--bone); font-size: 12px; }
     .dlg { display: flex; flex-direction: column; padding: 4px 2px; }
-    .dlgTitle { font-size: 15px; font-weight: bold; margin-bottom: 6px; }
+    .dlgTitle { font-family: "TO Grit", "Archivo", sans-serif; font-weight: 800; font-size: 17px; margin-bottom: 10px; }
     .dlgBody { margin-bottom: 10px; line-height: 1.45; color: rgba(239,233,220,0.75); }
-    .dlgBtns { display: flex; justify-content: flex-end; align-items: center; margin-top: 10px; }
+    .dlgBtns { display: flex; justify-content: flex-end; align-items: center; margin-top: 12px; }
     .dlgBtns .btn { margin-left: 8px; }
-    .sec { display: flex; flex-direction: column; padding: 10px 0; border-top: 1px solid var(--line); }
-    .sec.first { border-top: none; }
-    .secTitle { font-size: 10px; font-weight: bold; letter-spacing: 1px; margin-bottom: 6px; color: var(--dim); }
+    .sec { display: flex; flex-direction: column; padding: 11px 0; border-top: 1px solid var(--line); }
+    .sec.first { border-top: none; padding-top: 2px; }
+    .secTitle { font-size: 10px; font-weight: 700; letter-spacing: 1px; margin-bottom: 7px; color: var(--faint); }
     .secRow { display: flex; align-items: center; justify-content: space-between; padding: 4px 0; }
-    .secRow .grow { flex: 1 1 auto; min-width: 0; margin-right: 8px; }
+    .secRow .grow { flex: 1 1 auto; min-width: 0; margin-right: 10px; line-height: 1.35; }
     .sw { width: 30px; height: 16px; border-radius: 8px; background: #3a3733; position: relative; cursor: pointer; flex: 0 0 auto; }
     .sw .k { position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 6px; background: var(--bone); }
     .sw.on { background: var(--wasabi); }
     .sw.on .k { left: 16px; background: var(--night); }
     .path { font-size: 10px; color: var(--dim); word-break: break-all; }
-    .about { padding: 10px 12px; border-radius: 9px; background: var(--panel); display: flex; flex-direction: column; }
+    .about { padding: 10px 12px; border-radius: 9px; background: var(--raise); display: flex; flex-direction: column; }
     .about .row1 { display: flex; align-items: center; justify-content: space-between; }
     #aboutUpd { margin-top: 4px; color: var(--dim); }
-    .useList { max-height: 160px; overflow-y: auto; margin: 4px 0 4px; padding: 6px 8px; border-radius: 7px; background: var(--panel); font-size: 11px; line-height: 1.6; }
-    #cliPrefixes { margin-top: 4px; }
+    .useList { max-height: 160px; overflow-y: auto; margin: 4px 0 4px; padding: 6px 8px; border-radius: 7px; background: var(--raise); font-size: 11px; line-height: 1.6; }
   </style>
 </head>
 <body data-update-url="https://raw.githubusercontent.com/tylerodellhq/to-graphics/main/latest.json" data-news-url="https://github.com/tylerodellhq/to-graphics/blob/main/CHANGELOG.md">
   <div class="head">
-    <div class="logo"><div class="to">TO</div><span class="nm">Graphics</span></div>
-    <div id="addBtn" class="pill" title="Add .mogrt files to your templates"><img src="icons/plus.png" width="11" height="11" alt="" /><span>Add</span></div>
+    <div class="logo"><span class="nm disp">Tyler Odell</span><span class="tag disp">Graphics</span></div>
+    <div id="addBtn" class="ghostpill" title="Add .mogrt files to your templates"><img src="icons/plus.png" width="10" height="10" alt="" /><span>Add</span></div>
     <div id="setBtn" class="iconbtn" title="Settings"><img src="icons/settings.png" width="16" height="16" alt="Settings" /></div>
   </div>
 
   <div id="updateBar" class="bar"><span id="updateText" class="txt"></span><div id="updateBtn" class="btn small">Update</div></div>
   <div id="notice" class="bar"><span id="noticeText" class="txt"></span><div id="noticeNo" class="linkbtn">Later</div><div id="noticeYes" class="btn small">OK</div></div>
 
-  <div class="findRow">
-    <sp-textfield id="search" type="search" placeholder="Search templates…" size="s"></sp-textfield>
-    <div id="sizeBtn" class="pill" title="Bigger or smaller previews">Size</div>
+  <div class="tools">
+    <sp-textfield id="search" type="search" placeholder="Search" size="s"></sp-textfield>
+    <select id="typeSel" title="Filter by type or shape"></select>
+    <div id="sizeSeg" class="seg" title="Preview size"><div data-s="s">S</div><div data-s="m">M</div><div data-s="l">L</div></div>
   </div>
   <div id="clients" class="chips"></div>
-  <div id="types" class="chips sub"></div>
 
   <div id="grid"><div class="empty">Loading your templates…</div></div>
 
   <div id="detail">
     <div class="dTop">
       <div style="flex:1 1 auto;min-width:0">
-        <div id="dName" class="dName"></div>
+        <div id="dName" class="dName disp"></div>
         <div id="dMeta" class="dMeta"></div>
       </div>
       <div id="dClose" class="iconbtn" title="Close"><img src="icons/close.png" width="11" height="11" alt="Close" /></div>
     </div>
-    <div class="dRow"><span class="lbl">CLIENT</span><select id="dClient"></select></div>
-    <div class="dRow" style="align-items:flex-start"><span class="lbl" style="margin-top:2px">TYPE</span><div id="dTypes"></div></div>
+    <div class="dRow"><select id="dClient" title="Client"></select><select id="dType" title="Type"></select></div>
     <div class="dBtns">
       <div id="dAdd" class="btn" title="Add at the playhead (or double-click the template)">Add to timeline</div>
       <div id="dUses" class="btn ghost small" title="Swap the latest version into this project">Update in project</div>
       <div class="grow"></div>
-      <div id="dMore" class="linkbtn" title="More">More…</div>
+      <div id="dMore" class="linkbtn" title="Rename, preview, new version">More</div>
     </div>
   </div>
 
-  <div class="foot"><span id="status" class="muted"></span><span id="count" class="muted"></span></div>
+  <div class="foot"><span id="status" class="muted"></span><span id="count"></span></div>
 
   <!-- More for one template -->
   <dialog id="moreDlg">
