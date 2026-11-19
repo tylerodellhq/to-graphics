@@ -276,6 +276,9 @@ $("dClient").addEventListener("change", async () => {
     v = c.id;
   }
   it.client = v;
+  // Learn the name start: if this client has none yet, templates starting the same way follow.
+  const c = L.clientById(v), p = L.prefixOf(it.name);
+  if (c && p && !(c.prefixes || []).length) c.prefixes = [p];
   L.save();
   render();
 });
@@ -301,8 +304,21 @@ async function editClient(id, prefixHint) {
   $("cliName").value = c ? c.name : "";
   $("cliPrefixes").value = c ? (c.prefixes || []).join(", ") : (prefixHint || "");
   $("cliDel").style.display = c ? "" : "none";
+  $("cliTitle").textContent = c ? "Rename client" : "New client";
+  // The auto-sort bit stays as one plain line; "Change" opens the box only if wanted.
+  const pre = String($("cliPrefixes").value || "").trim();
+  $("cliAutoEdit").style.display = "none";
+  $("cliAuto").innerHTML = "";
+  const line = document.createElement("span");
+  line.textContent = pre ? `New templates starting "${pre}" go here automatically. ` : "";
+  const ch = document.createElement("span");
+  ch.className = "linkbtn"; ch.style.padding = "0";
+  ch.textContent = pre ? "Change" : "Auto-sort new templates into this client…";
+  ch.addEventListener("click", () => { $("cliAuto").style.display = "none"; $("cliAutoEdit").style.display = ""; });
+  $("cliAuto").style.display = "";
+  $("cliAuto").appendChild(line); $("cliAuto").appendChild(ch);
   let r = null;
-  try { r = await $("cliDlg").uxpShowModal({ title: c ? "Client" : "New client", resize: "none", size: { width: 340, height: 250 } }); } catch (e) {}
+  try { r = await $("cliDlg").uxpShowModal({ title: c ? "Rename client" : "New client", resize: "none", size: { width: 340, height: 230 } }); } catch (e) {}
   const name = String($("cliName").value || "").trim();
   const prefixes = String($("cliPrefixes").value || "").split(/[,\s]+/).map((s) => s.trim()).filter(Boolean);
   if (r === "del" && c) { L.removeClient(c.id); if (clientFilter === c.id) clientFilter = "all"; render(); return null; }

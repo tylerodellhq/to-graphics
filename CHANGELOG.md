@@ -1,5 +1,8 @@
 # TO Graphics changes
 
+## 1.0.5
+- Simpler client window: just the name. Auto-sorting is one plain line with a Change link, and it's learnt when you move a template into a client.
+
 ## 1.0.4
 - Rename clients: Settings > Clients, the Rename chip next to the chosen client, or click the chosen client again. (Double-click never worked: the chips redraw on the first click.)
 

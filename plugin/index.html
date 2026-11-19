@@ -195,10 +195,13 @@
   <!-- Client rename / delete -->
   <dialog id="cliDlg">
     <div class="dlg">
-      <div class="dlgTitle">Client</div>
-      <sp-textfield id="cliName" placeholder="Client name"></sp-textfield>
-      <div class="dlgBody" style="margin:10px 0 2px">New templates whose names start with these go to this client automatically (e.g. HL):</div>
-      <sp-textfield id="cliPrefixes" placeholder="HL, HLF"></sp-textfield>
+      <div id="cliTitle" class="dlgTitle">Rename client</div>
+      <sp-textfield id="cliName" placeholder="e.g. hard life"></sp-textfield>
+      <div id="cliAuto" class="muted" style="font-size:11px;margin-top:8px"></div>
+      <div id="cliAutoEdit" style="display:none;margin-top:8px">
+        <div class="muted" style="font-size:11px;margin-bottom:4px">Templates whose names start with:</div>
+        <sp-textfield id="cliPrefixes" placeholder="HL"></sp-textfield>
+      </div>
       <div class="dlgBtns"><div id="cliDel" class="linkbtn" style="margin-right:auto">Delete client</div><div id="cliNo" class="btn ghost">Cancel</div><div id="cliYes" class="btn">Save</div></div>
     </div>
   </dialog>

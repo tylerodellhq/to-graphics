@@ -1,5 +1,5 @@
 {
-  "version": "1.0.4",
+  "version": "1.0.5",
   "url": "https://raw.githubusercontent.com/tylerodellhq/to-graphics/main/TOGraphics.ccx",
-  "notes": "Rename clients in Settings, or with the Rename chip."
+  "notes": "Simpler client rename window."
 }
