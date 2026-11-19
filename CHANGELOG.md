@@ -1,5 +1,8 @@
 # TO Graphics changes
 
+## 1.0.4
+- Rename clients: Settings > Clients, the Rename chip next to the chosen client, or click the chosen client again. (Double-click never worked: the chips redraw on the first click.)
+
 ## 1.0.3
 - Rename templates from More (or double-click the name): changes the name Premiere shows and the file name; client, type and preview stay.
 

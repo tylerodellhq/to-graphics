@@ -1,7 +1,7 @@
 {
   "id": "uk.co.tylerodell.tographics",
   "name": "TO Graphics",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "index.html",
   "host": {
     "app": "premierepro",

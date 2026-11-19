@@ -32,7 +32,7 @@
     .btn.sky { background: var(--sky); border-color: var(--sky); }
     .btn.small { padding: 2px 10px; font-size: 11px; border-radius: 10px; }
     .btn.off { background: #2c2a27; border-color: #2c2a27; color: #77736b; cursor: default; }
-    .linkbtn { cursor: pointer; color: var(--dim); padding: 2px 4px; }
+    .linkbtn { cursor: pointer; color: var(--dim); padding: 2px 4px; white-space: nowrap; }
     .linkbtn:hover { color: var(--bone); }
 
     /* bars */
@@ -240,6 +240,11 @@
         <div class="secTitle">SHOW</div>
         <div class="secRow"><span class="grow">Caption templates (Captioneer)</span><div id="sCaps" class="sw"><div class="k"></div></div></div>
         <div class="secRow"><span class="grow">Hidden templates</span><div id="sHidden" class="sw"><div class="k"></div></div></div>
+      </div>
+      <div class="sec">
+        <div class="secTitle">CLIENTS</div>
+        <div id="sClients"></div>
+        <div class="secRow"><span class="grow muted">Rename a client, or set which name starts go to it.</span><div id="sNewClient" class="linkbtn">+ New client</div></div>
       </div>
       <div class="sec">
         <div class="secTitle">PREVIEWS</div>

@@ -76,17 +76,28 @@ function renderClients() {
     d.textContent = label;
     if (n !== undefined) { const s = document.createElement("span"); s.className = "n"; s.textContent = n; d.appendChild(s); }
     if (title) d.title = title;
-    d.addEventListener("click", () => { clientFilter = id; typeFilter = ""; render(); });
-    if (id !== "all" && id !== "fav" && id !== "none") d.addEventListener("dblclick", () => editClient(id));
+    const isClient = id !== "all" && id !== "fav" && id !== "none";
+    d.addEventListener("click", () => {
+      if (isClient && clientFilter === id) { editClient(id); return; }   // click the chosen client again to rename it
+      clientFilter = id; typeFilter = ""; render();
+    });
     box.appendChild(d);
   };
   chip("all", "All", all.length);
   const favs = all.filter((k) => lib.items[k].fav).length;
   if (favs) chip("fav", "★", favs, "Favourites");
   const sorted = [...lib.clients].sort((a, b) => a.name.localeCompare(b.name));
-  for (const c of sorted) chip(c.id, c.name, all.filter((k) => lib.items[k].client === c.id).length, "Double-click to rename");
+  for (const c of sorted) chip(c.id, c.name, all.filter((k) => lib.items[k].client === c.id).length, clientFilter === c.id ? "Click again to rename" : "");
   const none = all.filter((k) => !lib.items[k].client || !L.clientById(lib.items[k].client)).length;
   if (none) chip("none", "Unsorted", none);
+  if (L.clientById(clientFilter)) {
+    const ren = document.createElement("div");
+    ren.className = "chip add";
+    ren.textContent = "Rename";
+    ren.title = "Rename this client";
+    ren.addEventListener("click", () => editClient(clientFilter));
+    box.appendChild(ren);
+  }
   const add = document.createElement("div");
   add.className = "chip add";
   add.textContent = "+ Client";
@@ -531,15 +542,32 @@ async function openSettings() {
   sw($("sCaps"), prefs().showCaptions);
   sw($("sHidden"), prefs().showHidden);
   $("sPath").textContent = L.rootPath;
+  const box = $("sClients");
+  box.innerHTML = "";
+  for (const c of [...lib.clients].sort((a, b) => a.name.localeCompare(b.name))) {
+    const row = document.createElement("div");
+    row.className = "secRow";
+    const n = document.createElement("span");
+    n.className = "grow";
+    n.textContent = c.name + ((c.prefixes || []).length ? `  (${c.prefixes.join(", ")}…)` : "");
+    const b = document.createElement("div");
+    b.className = "btn ghost small";
+    b.textContent = "Rename";
+    b.addEventListener("click", () => $("setDlg").close("client:" + c.id));
+    row.appendChild(n); row.appendChild(b); box.appendChild(row);
+  }
   fillAbout();
   let r = null;
-  try { r = await $("setDlg").uxpShowModal({ title: "Settings", resize: "none", size: { width: 380, height: 520 } }); } catch (e) {}
+  try { r = await $("setDlg").uxpShowModal({ title: "Settings", resize: "none", size: { width: 380, height: 640 } }); } catch (e) {}
+  if (r && r.startsWith("client:")) { await editClient(r.slice(7)); return openSettings(); }
+  if (r === "newClient") { await editClient(null); return openSettings(); }
   if (r === "redoAll") previews(keys().filter((k) => visible(lib.items[k])), true);
   if (r === "update") installUpdate();
 }
 $("setBtn").addEventListener("click", openSettings);
 $("sCaps").addEventListener("click", () => { prefs().showCaptions = !prefs().showCaptions; sw($("sCaps"), prefs().showCaptions); L.save(); render(); });
 $("sHidden").addEventListener("click", () => { prefs().showHidden = !prefs().showHidden; sw($("sHidden"), prefs().showHidden); L.save(); render(); });
+$("sNewClient").addEventListener("click", () => $("setDlg").close("newClient"));
 $("sRedoAll").addEventListener("click", () => $("setDlg").close("redoAll"));
 $("sDone").addEventListener("click", () => $("setDlg").close(null));
 $("sInstall").addEventListener("click", () => $("setDlg").close("update"));
