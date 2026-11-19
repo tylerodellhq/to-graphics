@@ -195,7 +195,8 @@ function tile(key) {
   frame.className = "frame";
   // The preview is drawn at the template's real shape inside a fixed-height box.
   const sh = L.shapeOf(it);
-  const H = 104, W = 96;
+  const sz = lib.prefs.size || "m";
+  const H = sz === "s" ? 76 : sz === "l" ? 160 : 104, W = sz === "s" ? 68 : sz === "l" ? 150 : 96;
   let w = W, h = Math.round(W / sh.ratio);
   if (h > H) { h = H; w = Math.round(H * sh.ratio); }
   const ph = document.createElement("div");
@@ -205,7 +206,14 @@ function tile(key) {
   frame.appendChild(ph);
   if (sh.tag) { const b = document.createElement("div"); b.className = "badge"; b.textContent = sh.tag; frame.appendChild(b); }
   const fresh = it.updated && Date.now() - it.updated < 3 * 864e5 ? "upd" : it.added && Date.now() - it.added < 3 * 864e5 && it.seen !== true ? "new" : "";
-  if (fresh) { const b = document.createElement("div"); b.className = "badge " + fresh; b.style.left = sh.tag ? "auto" : "4px"; b.style.right = "4px"; b.textContent = fresh === "upd" ? "Updated" : "New"; frame.appendChild(b); }
+  if (fresh) { const b = document.createElement("div"); b.className = "badge " + fresh; b.style.left = "auto"; b.style.right = "auto"; b.style.bottom = "4px"; b.style.top = "auto"; b.style.left = "4px"; b.textContent = fresh === "upd" ? "Updated" : "New"; frame.appendChild(b); }
+  const star = document.createElement("img");
+  star.className = "star"; star.width = 12; star.height = 12;
+  star.src = it.fav ? "icons/star_on.png" : "icons/star_off_d.png";
+  star.style.opacity = it.fav ? "1" : "0.45";
+  star.title = it.fav ? "Remove from favourites" : "Add to favourites";
+  star.addEventListener("click", (ev) => { ev.stopPropagation(); it.fav = !it.fav; L.save(); render(); });
+  frame.appendChild(star);
   t.appendChild(frame);
   const n = document.createElement("div"); n.className = "tname"; n.textContent = it.name || key; t.appendChild(n);
   const meta = [clientFilter === "all" ? "" : clientName(it.client), (it.types || [])[0], fmtDur(it.dur)].filter(Boolean).join(" · ");
@@ -316,6 +324,7 @@ async function openMore(key) {
   let r = null;
   try { r = await $("moreDlg").uxpShowModal({ title: it.name, resize: "none", size: { width: 360, height: 430 } }); } catch (e) {}
   if (r === "redo") previews([key], true);
+  if (r === "remove") removeTemplate(key);
   if (r === "replace") replaceVersion(key);
 }
 $("mFav").addEventListener("click", () => { const it = lib.items[selected]; if (!it) return; it.fav = !it.fav; sw($("mFav"), it.fav); L.save(); render(); });
@@ -330,6 +339,25 @@ $("mHide").addEventListener("click", () => {
 $("mAt").addEventListener("change", () => { const it = lib.items[selected]; if (!it) return; it.thumbAt = parseFloat($("mAt").value) || 0; L.save(); });
 $("mRedo").addEventListener("click", () => $("moreDlg").close("redo"));
 $("mReplace").addEventListener("click", () => $("moreDlg").close("replace"));
+$("mRemove").addEventListener("click", () => $("moreDlg").close("remove"));
+$("mFinder").addEventListener("click", () => showInFinder(L.pathOf(selected).replace(/[\/\\][^\/\\]*$/, "")));
+async function showInFinder(dir) {
+  try { const err = await shell.openPath(dir); if (err) throw new Error(err); }
+  catch (e) { setStatus("Couldn't open the folder: " + dir, "err"); }
+}
+async function removeTemplate(key) {
+  const it = lib.items[key];
+  if (!it) return;
+  $("rmText").textContent = `"${it.name}" is taken out of your templates (and Premiere's Local Templates). Projects already using it aren't affected. A copy is kept in the hidden ".to-graphics/removed" folder.`;
+  let r = null;
+  try { r = await $("rmDlg").uxpShowModal({ title: "Remove", resize: "none", size: { width: 360, height: 200 } }); } catch (e) {}
+  if (r !== "go") return;
+  try { await L.removeFile(key); if (selected === key) selected = ""; setStatus(`✓ Removed ${it.name}`, "ok"); }
+  catch (e) { setStatus(e.message || String(e), "err"); }
+  render();
+}
+$("rmYes").addEventListener("click", () => $("rmDlg").close("go"));
+$("rmNo").addEventListener("click", () => $("rmDlg").close(null));
 $("mDone").addEventListener("click", () => $("moreDlg").close(null));
 
 // ---------- adding templates ----------
@@ -496,6 +524,7 @@ $("sHidden").addEventListener("click", () => { prefs().showHidden = !prefs().sho
 $("sRedoAll").addEventListener("click", () => $("setDlg").close("redoAll"));
 $("sDone").addEventListener("click", () => $("setDlg").close(null));
 $("sInstall").addEventListener("click", () => $("setDlg").close("update"));
+$("sOpen").addEventListener("click", () => showInFinder(L.rootPath));
 $("sLog").addEventListener("click", async () => {
   const text = [`TO Graphics ${PLUGIN_VERSION}`, `Folder: ${L.rootPath}`, ...P.log].join("\n");
   try { await navigator.clipboard.setContent({ "text/plain": text }); $("sLog").textContent = "Copied"; } catch (e) { $("sLog").textContent = "Couldn't copy"; }
@@ -564,6 +593,19 @@ function fillAbout() {
 $("aboutCheck").addEventListener("click", async () => { $("aboutUpd").textContent = "Checking…"; await checkForUpdate(true); fillAbout(); });
 $("updateBtn").addEventListener("click", installUpdate);
 
+// ---------- preview size (S / M / L, remembered) ----------
+function applySize() {
+  const s = lib.prefs.size || "m";
+  document.body.classList.remove("sz-s", "sz-l");
+  if (s !== "m") document.body.classList.add("sz-" + s);
+  $("sizeBtn").textContent = s === "s" ? "Small" : s === "l" ? "Large" : "Medium";
+}
+$("sizeBtn").addEventListener("click", () => {
+  const order = ["s", "m", "l"];
+  lib.prefs.size = order[(order.indexOf(lib.prefs.size || "m") + 1) % 3];
+  L.save(); applySize(); render();
+});
+
 // ---------- start ----------
 $("search").addEventListener("input", () => render());
 (async () => {
@@ -572,6 +614,7 @@ $("search").addEventListener("input", () => render());
     await L.load();
     if (lib.prefs.showCaptions === undefined) lib.prefs.showCaptions = false;
   } catch (e) { setStatus(e.message || String(e), "err"); }
+  applySize();
   // First run: everything already in the folder is not "New".
   const firstRun = !keys().length;
   await refresh(true);

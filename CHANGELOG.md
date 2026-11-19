@@ -1,5 +1,8 @@
 # TO Graphics changes
 
+## 1.0.1
+- Star on each preview for favourites, Small/Medium/Large preview size, Show in Finder, Open folder, and Remove from my templates (a copy is kept in .to-graphics/removed).
+
 ## 1.0.0
 - First version: your templates sorted by client (auto from names like "HL …"), filters by type and shape,
   real previews rendered by Premiere at each template's own shape, Captioneer and hidden templates kept out

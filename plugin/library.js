@@ -281,6 +281,18 @@
     await out.write(data, { format: storage.formats.binary });
     return { key: targetName, replaced: false };
   }
+  async function removeFile(key) {
+    const e = entries.get(key);
+    if (!e) throw new Error("That template's file has gone missing.");
+    const bin = await subFolder(await dataFolder(), "removed");
+    const data = await e.read({ format: storage.formats.binary });
+    const out = await bin.createFile(Date.now() + " " + e.name, { overwrite: true });
+    await out.write(data, { format: storage.formats.binary });
+    await e.delete();
+    delete lib.items[key];
+    entries.delete(key);
+    save();
+  }
   async function replaceFile(key, file) {
     const e = entries.get(key);
     if (!e) throw new Error("That template's file has gone missing.");
@@ -313,7 +325,7 @@
 
   window.TOLib = {
     lib, load, save, saveNow, scan, entries, pathOf, templatesFolder, dataFolder, thumbsFolder, entryAt,
-    addFile, replaceFile, addClient, renameClient, removeClient, clientById, prefixOf, TYPE_NAMES, shapeOf,
+    addFile, replaceFile, removeFile, addClient, renameClient, removeClient, clientById, prefixOf, TYPE_NAMES, shapeOf,
     get rootPath() { return rootPath; },
   };
 })();

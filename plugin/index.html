@@ -60,6 +60,8 @@
     .group { width: 100%; font-size: 10px; font-weight: bold; letter-spacing: 1px; color: var(--dim); margin: 6px 0 6px 2px; }
     .tile { position: relative; width: 31.3%; margin: 0 2% 8px 0; border-radius: 9px; padding: 5px 5px 6px; box-sizing: border-box;
       background: var(--tile); border: 2px solid var(--tile); cursor: pointer; display: flex; flex-direction: column; }
+    body.sz-s .tile { width: 23%; } body.sz-s .frame { height: 84px; }
+    body.sz-l .tile { width: 48%; } body.sz-l .frame { height: 170px; }
     .tile:hover { border-color: #3a3733; }
     .tile.sel { border-color: var(--wasabi); }
     .tile.hid { opacity: 0.45; }
@@ -132,6 +134,7 @@
 
   <div class="findRow">
     <sp-textfield id="search" type="search" placeholder="Search templates…" size="s"></sp-textfield>
+    <div id="sizeBtn" class="pill" title="Bigger or smaller previews">Size</div>
   </div>
   <div id="clients" class="chips"></div>
   <div id="types" class="chips sub"></div>
@@ -177,6 +180,9 @@
         <div class="dlgBody" style="margin:0 0 6px">Pick the new .mogrt to replace this one. It keeps this name, client and type, then offers to update the copies in your project.</div>
         <div class="secRow"><span class="grow"></span><div id="mReplace" class="btn small">Choose new version…</div></div>
       </div>
+      <div class="sec">
+        <div class="secRow"><div id="mFinder" class="linkbtn">Show in Finder</div><div id="mRemove" class="linkbtn">Remove from my templates…</div></div>
+      </div>
       <div class="dlgBtns"><div id="mDone" class="btn ghost">Done</div></div>
     </div>
   </dialog>
@@ -212,6 +218,15 @@
     </div>
   </dialog>
 
+  <!-- Remove a template -->
+  <dialog id="rmDlg">
+    <div class="dlg">
+      <div class="dlgTitle">Remove this template?</div>
+      <div id="rmText" class="dlgBody"></div>
+      <div class="dlgBtns"><div id="rmNo" class="btn ghost">Cancel</div><div id="rmYes" class="btn">Remove</div></div>
+    </div>
+  </dialog>
+
   <!-- Settings -->
   <dialog id="setDlg">
     <div class="dlg">
@@ -228,7 +243,7 @@
       <div class="sec">
         <div class="secTitle">TEMPLATES FOLDER</div>
         <div id="sPath" class="path"></div>
-        <div class="secRow"><span class="grow muted">Same folder as Premiere's Local Templates.</span><div id="sLog" class="linkbtn">Copy log</div></div>
+        <div class="secRow"><span class="grow muted">Same folder as Premiere's Local Templates.</span><div id="sOpen" class="linkbtn">Open folder</div><div id="sLog" class="linkbtn">Copy log</div></div>
       </div>
       <div class="about">
         <div class="row1"><b id="aboutVer">TO Graphics</b><div id="aboutCheck" class="linkbtn">Check for updates</div></div>
