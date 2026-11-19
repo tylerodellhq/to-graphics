@@ -117,7 +117,8 @@
     .sec.first { border-top: none; padding-top: 2px; }
     .secTitle { font-size: 10px; font-weight: 700; letter-spacing: 1px; margin-bottom: 7px; color: var(--faint); }
     .secRow { display: flex; align-items: center; justify-content: space-between; padding: 4px 0; }
-    .secRow .grow { flex: 1 1 auto; min-width: 0; margin-right: 10px; line-height: 1.35; }
+    .secRow .grow { flex: 1 1 auto; min-width: 0; margin-right: 10px; line-height: 1.35; white-space: normal; }
+    .dlg { padding-right: 6px; }
     .sw { width: 30px; height: 16px; border-radius: 8px; background: #3a3733; position: relative; cursor: pointer; flex: 0 0 auto; }
     .sw .k { position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 6px; background: var(--bone); }
     .sw.on { background: var(--wasabi); }
@@ -183,7 +184,7 @@
       <div class="sec">
         <div class="secTitle">PREVIEW</div>
         <div class="secRow"><span class="grow muted">Take the preview from…</span>
-          <select id="mAt" style="width:110px"><option value="0">Best frame</option><option value="0.15">Start</option><option value="0.35">Early</option><option value="0.5">Middle</option><option value="0.75">Late</option><option value="0.95">End</option></select></div>
+          <select id="mAt" style="width:140px"><option value="0">Best frame</option><option value="0.15">Start</option><option value="0.35">Early</option><option value="0.5">Middle</option><option value="0.75">Late</option><option value="0.95">End</option></select></div>
         <div class="secRow"><span class="grow"></span><div id="mRedo" class="btn ghost small">Make preview again</div></div>
       </div>
       <div class="sec">
@@ -194,7 +195,6 @@
       <div class="sec">
         <div class="secRow"><div id="mFinder" class="linkbtn">Show in Finder</div><div id="mRemove" class="linkbtn">Remove from my templates…</div></div>
       </div>
-      <div class="dlgBtns"><div id="mDone" class="btn ghost">Done</div></div>
     </div>
   </dialog>
 
@@ -268,7 +268,7 @@
         <div class="row1"><b id="aboutVer">TO Graphics</b><div id="aboutCheck" class="linkbtn">Check for updates</div></div>
         <div id="aboutUpd"></div>
       </div>
-      <div class="dlgBtns"><div id="sInstall" class="btn hide">Install update</div><div id="sDone" class="btn ghost">Done</div></div>
+      <div class="dlgBtns"><div id="sInstall" class="btn hide">Install update</div></div>
     </div>
   </dialog>
 

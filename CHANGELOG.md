@@ -1,5 +1,8 @@
 # TO Graphics changes
 
+## 1.1.1
+- Pop-up windows are roomier and scroll instead of cutting text off. No Done buttons: close them with the window's own close button.
+
 ## 1.1.0
 - Design pass to the brand guidelines: Tyler Odell + Wasabi pill header, TO Grit headings, Archivo text, Night/Bone/Wasabi only.
 - Cleaner layout: client chips wrap (no cut-off or sideways scrolling), type and shape filter is one dropdown, S/M/L size switch, empty clients hidden, no ratio badges (the shape shows it), stars only on hover or when favourited.

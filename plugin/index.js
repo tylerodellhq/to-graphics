@@ -15,6 +15,15 @@ let clientFilter = "all";        // "all" | "fav" | "none" | client id
 let typeFilter = "";
 const thumbCache = new Map();   // key -> { v, url }
 
+// ---------- dialogs ----------
+// Roomy fixed sizes with the content scrolling inside, so nothing is ever clipped. The window's
+// own close button closes it (no Done buttons); the title bar just says the panel's name.
+function showDlg(id, w, h) {
+  const d = $(id), inner = d.querySelector(".dlg");
+  if (inner) { inner.style.maxHeight = (h - 70) + "px"; inner.style.overflowY = "auto"; }
+  return d.uxpShowModal({ title: "TO Graphics", resize: "none", size: { width: w, height: h } });
+}
+
 // ---------- status ----------
 let statusTimer = null;
 function setStatus(msg, cls) {
@@ -305,7 +314,7 @@ async function editClient(id, prefixHint) {
   $("cliAuto").style.display = "";
   $("cliAuto").appendChild(line); $("cliAuto").appendChild(ch);
   let r = null;
-  try { r = await $("cliDlg").uxpShowModal({ title: c ? "Rename client" : "New client", resize: "none", size: { width: 340, height: 230 } }); } catch (e) {}
+  try { r = await showDlg("cliDlg", 380, 270); } catch (e) {}
   const name = String($("cliName").value || "").trim();
   const prefixes = String($("cliPrefixes").value || "").split(/[,\s]+/).map((s) => s.trim()).filter(Boolean);
   if (r === "del" && c) { L.removeClient(c.id); if (clientFilter === c.id) clientFilter = "all"; render(); return null; }
@@ -338,7 +347,7 @@ async function openMore(key) {
   sw($("mHide"), it.hidden || (isCaption(it) && !it.unhidden));
   $("mAt").value = String(it.thumbAt || 0);
   let r = null;
-  try { r = await $("moreDlg").uxpShowModal({ title: it.name, resize: "none", size: { width: 360, height: 510 } }); } catch (e) {}
+  try { r = await showDlg("moreDlg", 400, 640); } catch (e) {}
   if (r === "redo") previews([key], true);
   if (r === "remove") removeTemplate(key);
   if (r === "replace") replaceVersion(key);
@@ -383,7 +392,7 @@ async function removeTemplate(key) {
   if (!it) return;
   $("rmText").textContent = `"${it.name}" is taken out of your templates (and Premiere's Local Templates). Projects already using it aren't affected. A copy is kept in the hidden ".to-graphics/removed" folder.`;
   let r = null;
-  try { r = await $("rmDlg").uxpShowModal({ title: "Remove", resize: "none", size: { width: 360, height: 200 } }); } catch (e) {}
+  try { r = await showDlg("rmDlg", 400, 250); } catch (e) {}
   if (r !== "go") return;
   try { await L.removeFile(key); if (selected === key) selected = ""; setStatus(`✓ Removed ${it.name}`, "ok"); }
   catch (e) { setStatus(e.message || String(e), "err"); }
@@ -391,14 +400,13 @@ async function removeTemplate(key) {
 }
 $("rmYes").addEventListener("click", () => $("rmDlg").close("go"));
 $("rmNo").addEventListener("click", () => $("rmDlg").close(null));
-$("mDone").addEventListener("click", () => $("moreDlg").close(null));
 
 // ---------- adding templates ----------
 async function askClash(existingKey, name) {
   const it = lib.items[existingKey] || {};
   $("clashText").textContent = `"${it.name || name}" is already in your templates. Replace it with this new version (it keeps its client and type), or keep both?`;
   let r = null;
-  try { r = await $("clashDlg").uxpShowModal({ title: "Already there", resize: "none", size: { width: 380, height: 190 } }); } catch (e) {}
+  try { r = await showDlg("clashDlg", 440, 250); } catch (e) {}
   return r;
 }
 $("clashReplace").addEventListener("click", () => $("clashDlg").close("replace"));
@@ -505,7 +513,7 @@ async function offerSwap(list, manual) {
   for (const u of uses) bySeq.set(u.seq.name, (bySeq.get(u.seq.name) || 0) + 1);
   for (const [s, n] of bySeq) { const d = document.createElement("div"); d.textContent = `${s}${n > 1 ? ` (${n})` : ""}`; box.appendChild(d); }
   let r = null;
-  try { r = await $("usesDlg").uxpShowModal({ title: "Update in project", resize: "none", size: { width: 380, height: 360 } }); } catch (e) {}
+  try { r = await showDlg("usesDlg", 440, 460); } catch (e) {}
   if (r !== "go") return;
   busy = true;
   let n = 0;
@@ -552,7 +560,8 @@ async function openSettings() {
     row.className = "secRow";
     const n = document.createElement("span");
     n.className = "grow";
-    n.textContent = c.name + ((c.prefixes || []).length ? `  (${c.prefixes.join(", ")}…)` : "");
+    const count = Object.values(lib.items).filter((x) => x.client === c.id).length;
+    n.textContent = `${c.name}  ·  ${count} template${count === 1 ? "" : "s"}`;
     const b = document.createElement("div");
     b.className = "btn ghost small";
     b.textContent = "Rename";
@@ -561,7 +570,7 @@ async function openSettings() {
   }
   fillAbout();
   let r = null;
-  try { r = await $("setDlg").uxpShowModal({ title: "Settings", resize: "none", size: { width: 380, height: 640 } }); } catch (e) {}
+  try { r = await showDlg("setDlg", 420, 700); } catch (e) {}
   if (r && r.startsWith("client:")) { await editClient(r.slice(7)); return openSettings(); }
   if (r === "newClient") { await editClient(null); return openSettings(); }
   if (r === "redoAll") previews(keys().filter((k) => visible(lib.items[k])), true);
@@ -572,7 +581,6 @@ $("sCaps").addEventListener("click", () => { prefs().showCaptions = !prefs().sho
 $("sHidden").addEventListener("click", () => { prefs().showHidden = !prefs().showHidden; sw($("sHidden"), prefs().showHidden); L.save(); render(); });
 $("sNewClient").addEventListener("click", () => $("setDlg").close("newClient"));
 $("sRedoAll").addEventListener("click", () => $("setDlg").close("redoAll"));
-$("sDone").addEventListener("click", () => $("setDlg").close(null));
 $("sInstall").addEventListener("click", () => $("setDlg").close("update"));
 $("sOpen").addEventListener("click", () => showInFinder(L.rootPath));
 $("sLog").addEventListener("click", async () => {
