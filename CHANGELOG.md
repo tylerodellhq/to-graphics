@@ -1,5 +1,8 @@
 # TO Graphics changes
 
+## 1.1.3
+- Buttons renamed to just Add and Update.
+
 ## 1.1.2
 - Preview size (Small / Medium / Large) moved into Settings, so the top bar is just search and type.
 
