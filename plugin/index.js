@@ -318,11 +318,13 @@ const sw = (el, on) => el.classList.toggle("on", !!on);
 async function openMore(key) {
   const it = lib.items[key];
   $("moreTitle").textContent = it.name;
+  $("mName").value = it.name;
+  $("mNameErr").textContent = "";
   sw($("mFav"), it.fav);
   sw($("mHide"), it.hidden || (isCaption(it) && !it.unhidden));
   $("mAt").value = String(it.thumbAt || 0);
   let r = null;
-  try { r = await $("moreDlg").uxpShowModal({ title: it.name, resize: "none", size: { width: 360, height: 430 } }); } catch (e) {}
+  try { r = await $("moreDlg").uxpShowModal({ title: it.name, resize: "none", size: { width: 360, height: 510 } }); } catch (e) {}
   if (r === "redo") previews([key], true);
   if (r === "remove") removeTemplate(key);
   if (r === "replace") replaceVersion(key);
@@ -339,6 +341,23 @@ $("mHide").addEventListener("click", () => {
 $("mAt").addEventListener("change", () => { const it = lib.items[selected]; if (!it) return; it.thumbAt = parseFloat($("mAt").value) || 0; L.save(); });
 $("mRedo").addEventListener("click", () => $("moreDlg").close("redo"));
 $("mReplace").addEventListener("click", () => $("moreDlg").close("replace"));
+async function doRename() {
+  const key = selected, it = lib.items[key];
+  if (!it) return;
+  const name = String($("mName").value || "").trim();
+  if (!name || name === it.name) return;
+  try {
+    const newKey = await L.renameTemplate(key, name);
+    selected = newKey;
+    $("moreTitle").textContent = name;
+    $("mNameErr").textContent = "Renamed. Copies already in projects keep their old name.";
+    setStatus(`✓ Renamed to ${name}`, "ok");
+    render();
+  } catch (e) { $("mNameErr").textContent = e.message || String(e); }
+}
+$("mRename").addEventListener("click", doRename);
+$("mName").addEventListener("keydown", (e) => { if (e.key === "Enter") doRename(); });
+$("dName").addEventListener("dblclick", () => selected && openMore(selected));
 $("mRemove").addEventListener("click", () => $("moreDlg").close("remove"));
 $("mFinder").addEventListener("click", () => showInFinder(L.pathOf(selected).replace(/[\/\\][^\/\\]*$/, "")));
 async function showInFinder(dir) {

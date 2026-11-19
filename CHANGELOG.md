@@ -1,5 +1,8 @@
 # TO Graphics changes
 
+## 1.0.3
+- Rename templates from More (or double-click the name): changes the name Premiere shows and the file name; client, type and preview stay.
+
 ## 1.0.2
 - Previews wait for the template to load: a red Media Offline frame is spotted and rendered again, and the busiest real frame is kept (previews are now PNGs). Old previews are remade once.
 - Client headings show names exactly as typed (no forced capitals).

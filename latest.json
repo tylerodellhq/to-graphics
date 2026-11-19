@@ -1,5 +1,5 @@
 {
-  "version": "1.0.2",
+  "version": "1.0.3",
   "url": "https://raw.githubusercontent.com/tylerodellhq/to-graphics/main/TOGraphics.ccx",
-  "notes": "Previews wait for templates to load, so no more Media Offline previews."
+  "notes": "Rename templates from the panel."
 }

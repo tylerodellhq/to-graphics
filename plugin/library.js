@@ -299,6 +299,52 @@
     const data = await file.read({ format: storage.formats.binary });
     await e.write(data, { format: storage.formats.binary });
   }
+  // Rename a template: the name inside the .mogrt (what Premiere shows) and the file name.
+  // Everything else about it (client, types, preview) carries over.
+  function renameBytes(buf, newName) {
+    const files = fflate.unzipSync(new Uint8Array(buf));
+    if (!files["definition.json"]) throw new Error("This .mogrt has no definition.json");
+    const d = JSON.parse(fflate.strFromU8(files["definition.json"]));
+    d.capsuleName = newName;
+    if (d.capsuleNameLocalized && Array.isArray(d.capsuleNameLocalized.strDB)) for (const x of d.capsuleNameLocalized.strDB) x.str = newName;
+    for (const loc of Object.values(d.sourceInfoLocalized || {})) if (loc && typeof loc === "object" && "name" in loc) loc.name = newName;
+    const out = {};
+    for (const [n, data] of Object.entries(files)) {
+      // Video/images are already compressed: store them as they are.
+      out[n] = n === "definition.json" ? [fflate.strToU8(JSON.stringify(d)), { level: 6 }] : [data, { level: /\.(mp4|mov|png|jpe?g|gif|webm)$/i.test(n) ? 0 : 6 }];
+    }
+    return fflate.zipSync(out).buffer;
+  }
+  async function renameTemplate(key, newName) {
+    newName = String(newName || "").trim();
+    if (!newName) throw new Error("Type a name first.");
+    const e = entries.get(key), it = lib.items[key];
+    if (!e || !it) throw new Error("That template's file has gone missing.");
+    const safe = newName.replace(/[\/\\:*?"<>|]+/g, "-").replace(/^\.+/, "").slice(0, 120) || "Template";
+    const fileName = safe + ".mogrt";
+    const slash = key.lastIndexOf("/");
+    const dirKey = slash >= 0 ? key.slice(0, slash + 1) : "";
+    const newKey = dirKey + fileName;
+    if (newKey.toLowerCase() !== key.toLowerCase() && lib.items[newKey]) throw new Error(`There's already a template called ${newName}.`);
+    const bytes = renameBytes(await e.read({ format: storage.formats.binary }), newName);
+    let folder = await templatesFolder();
+    for (const part of dirKey.split("/").filter(Boolean)) folder = await folder.getEntry(part);
+    let out;
+    if (newKey === key) { out = e; await e.write(bytes, { format: storage.formats.binary }); }
+    else {
+      out = await folder.createFile(fileName, { overwrite: true });
+      await out.write(bytes, { format: storage.formats.binary });
+      if (newKey.toLowerCase() !== key.toLowerCase()) { try { await e.delete(); } catch (err) {} }
+    }
+    // Same entry, new key + name; stamp it now so the next scan doesn't treat it as a new version.
+    delete lib.items[key]; entries.delete(key);
+    Object.assign(it, await stamp(out), { name: newName, file: fileName, thumbFor: undefined });
+    it.thumbFor = it.mtime;
+    lib.items[newKey] = it; entries.set(newKey, out);
+    save();
+    return newKey;
+  }
+
   async function freeName(folder, name) {
     const base = name.replace(/\.mogrt$/i, "");
     for (let i = 2; i < 100; i++) {
@@ -325,7 +371,7 @@
 
   window.TOLib = {
     lib, load, save, saveNow, scan, entries, pathOf, templatesFolder, dataFolder, thumbsFolder, entryAt,
-    addFile, replaceFile, removeFile, addClient, renameClient, removeClient, clientById, prefixOf, TYPE_NAMES, shapeOf,
+    addFile, replaceFile, removeFile, renameTemplate, addClient, renameClient, removeClient, clientById, prefixOf, TYPE_NAMES, shapeOf,
     get rootPath() { return rootPath; },
   };
 })();

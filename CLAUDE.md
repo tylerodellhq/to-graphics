@@ -32,6 +32,7 @@ UXP, manifest v5, Premiere 25.6+, updates through Creative Cloud (.ccx).
   project: every timeline item named like the template (and sharing a control name) is removed, the new
   one placed at the same start/track, trimmed to the same end, and its settings copied by component +
   param display name. Keyframed settings are left at the new defaults.
+- Rename (More): rewrites capsuleName in definition.json + renames the file, and re-stamps it so it is not seen as a new version.
 - UXP has no drag and drop, so templates are added with Add (file picker) or straight from AE.
 
 ## Design
